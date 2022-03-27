@@ -5,23 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "name": "Exec Debug",
             "program": "${workspaceFolder}/build/tests/delaf_test",
             "args": [],
-            "cwd": "${workspaceFolder}/data",
-            "MIMode": "gdb"
+            "cwd": "${workspaceFolder}/data"
         },
         {
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "name": "Unit Test Debug",
             "program": "${workspaceFolder}/build/tests/delaf_test",
             "args": [],
             "cwd": "${workspaceFolder}/data",
-            "preLaunchTask": "${defaultBuildTask}",
-            "MIMode": "gdb"
+            "preLaunchTask": "${defaultBuildTask}"
         }
     ]
 }

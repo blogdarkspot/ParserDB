@@ -1,4 +1,5 @@
 #include "delaf_dictionary.h"
+#include "tokens.hpp"
 #include <fstream>
 #include <iostream>
 #include <locale>
@@ -22,14 +23,6 @@ bool delaf_dictionary::open()
     return _fstream.is_open() && _fstream.good();
 };
 
-/*
-_class.insert(word._wclass);
-            _trace.insert(word._trace);
-            for (const auto &value : word._flexion)
-            {
-                _flexion.insert(value);
-            }
-*/
 void delaf_dictionary::close()
 {
     _fstream.close();
@@ -49,17 +42,12 @@ bool delaf_dictionary::parser()
                 auto lex = _controller.parser_word(word);
                 if (lex.categoria != nullptr)
                 {
-                    _dic.add(word._word, lex);
-                }
-                else
-                {
-                    //    std::cout << "para aqui" ;
+                    _dic.add(word._word, word._canonical, std::make_shared<lexico>(lex));
                 }
             }
         }
         catch (const std::exception &e)
         {
-            std::cout << e.what() << std::endl;
             ret = false;
         }
     }
@@ -91,10 +79,6 @@ const std::wstring delaf_dictionary::parser_word(const std::wstring &line, std::
     auto tmp = line.find_first_of(wchar_t(','));
     auto word = line.substr(pos, tmp - pos);
     pos = tmp + 1;
-    if (word == L"ambas")
-    {
-        std::cout << " " << std::endl;
-    }
     return word;
 }
 
@@ -191,7 +175,7 @@ const std::vector<std::wstring> delaf_dictionary::parser_flexion(const std::wstr
     return ret;
 }
 
-lexico dictionary_controller::parser_word(const delaf_word &word) const
+lexico dictionary_controller::parser_word(const delaf_word &word)
 {
     const auto it = dcategoria.find(word._wclass);
     lexico ret;
@@ -247,6 +231,7 @@ lexico dictionary_controller::parser_word(const delaf_word &word) const
         auto xpos = word._wclass.find(L"X");
         if (xpos != std::wstring::npos)
         {
+            list_con.insert(word._word);
             ret.categoria = dcategoria.find(L"CON");
             auto prefix = word._wclass.substr(0, xpos);
             auto suffix = word._wclass.substr(xpos + 1);
@@ -487,7 +472,7 @@ void dictionary_controller::fillPRO(lexico &lex, const delaf_word &word) const
         auto iforma = forma.find(word._flexion[i].substr(0, 1));
         if (iforma == forma.end())
         {
-            std::wcout << word._flexion[i].substr(0, 1);
+            //    std::wcout << word._flexion[i].substr(0, 1);
             j = 0;
         }
 
