@@ -1,5 +1,5 @@
 .cache/*
 build/*
-data/*
+data/*.dic
 compile_commands.json
 delaf_linux.dic
