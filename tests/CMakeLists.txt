@@ -19,6 +19,7 @@ macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRE
 endmacro()
 
 package_add_test_with_libraries(delaf_test delaf_dictionary_test.cpp template::sample "${DATA_PATH}")
+package_add_test_with_libraries(lexico_test dictionary_test.cpp template::sample "${DATA_PATH}")
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     include(CodeCoverage)

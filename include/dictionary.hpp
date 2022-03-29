@@ -4,8 +4,10 @@
 #include "lexico.hpp"
 #include <iostream>
 #include <memory>
+#include <set>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -61,6 +63,24 @@ template <typename _Key> class dictionary
 
     bool remove(_Key word)
     {
+        return false;
+    }
+
+    std::set<_Key> get_class(_Key word)
+    {
+        std::set<_Key> ret;
+        auto hashWord = hash(word);
+        auto flexions = _library_by_word.find(hashWord);
+
+        if (flexions != _library_by_word.end())
+        {
+            for (const auto &value : flexions->second)
+            {
+                ret.insert(*(value->data->categoria));
+            }
+        }
+
+        return ret;
     }
 
     void split_contraction_word(_Key word)
@@ -100,17 +120,22 @@ template <typename _Key> class dictionary
         return ret;
     }
 
-    const _Key get_canonical(_Key word)
+    const std::vector<_Key> get_canonicals(_Key word)
     {
+        std::vector<_Key> ret;
 
-        auto iword = _library_by_word.find(word);
+        auto hashWord = hash(word);
+        auto iword = _library_by_word.find(hashWord);
 
-        if (iword == _library_by_word.end())
+        if (iword != _library_by_word.end())
         {
-            return _Key();
+            for (const auto &value : iword->second)
+            {
+                ret.emplace_back(_canonical_desc[value->canonical]);
+            }
         }
 
-        return _canonical_desc[iword->canonical];
+        return ret;
     }
 
     const std::vector<_Key> get_flexion_from_canonical(_Key canonical)
@@ -135,6 +160,9 @@ template <typename _Key> class dictionary
     unordered_map<std::size_t, vector<std::shared_ptr<storage>>> _library_by_canonical;
     vector<_Key> _canonical_desc;
     vector<_Key> _word_desc;
+
+    std::unordered_set<std::size_t> hash_canonicals;
+    std::unordered_set<std::size_t> hash_words;
 };
 } // namespace dictionary
 #endif

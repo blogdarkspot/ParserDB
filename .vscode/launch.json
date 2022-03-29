@@ -7,7 +7,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Exec Debug",
+            "name": "Unit Test",
             "program": "${workspaceFolder}/build/tests/delaf_test",
             "args": [],
             "cwd": "${workspaceFolder}/data"
@@ -20,6 +20,23 @@
             "args": [],
             "cwd": "${workspaceFolder}/data",
             "preLaunchTask": "${defaultBuildTask}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "benchmark",
+            "program": "${workspacefolder}/build/benchmark/lexic_unit_benchmark",
+            "args": [],
+            "cwd": "${workspacefolder}/data",
+            "prelaunchtask": "Build Release"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "benchmark debug",
+            "program": "${workspaceFolder}/build/benchmark/lexic_unit_benchmark",
+            "args": [],
+            "prelaunchtask": "Build Debug"
         }
     ]
 }

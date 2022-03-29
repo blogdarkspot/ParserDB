@@ -12,3 +12,8 @@ if(PACKAGE_TESTS)
     include(GoogleTest)
     add_subdirectory(tests)
 endif()
+
+option(PACKAGE_BENCHMARK "Build Benchmark" ON)
+if(PACKAGE_BENCHMARK)
+    add_subdirectory(benchmark)
+endif()

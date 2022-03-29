@@ -4,6 +4,10 @@
 #include "string_def.hpp"
 #include <unordered_set>
 
+#include <cwctype>
+#include <string>
+#include <vector>
+
 namespace dictionary
 {
 const static std::unordered_set<std::wstring> dcategoria = {L"A",      L"ADV",   L"CONJ", L"ART",  L"NUM",
@@ -146,5 +150,19 @@ static const std::unordered_set<std::wstring>::const_iterator categoria_enum_to_
         return dcategoria.end();
     }
 }
+
+static void tokenize(std::wstring const &str, const std::wstring &delim, std::vector<std::wstring> &out)
+{
+    std::wstring tmp = str;
+    size_t pos = 0;
+    while ((pos = tmp.find(L" ")) != std::wstring::npos)
+    {
+        auto token = tmp.substr(0, pos);
+        std::transform(token.begin(), token.end(), token.begin(), std::towlower);
+        out.emplace_back(token);
+        tmp.erase(0, pos + delim.length());
+    }
+}
+
 }; // namespace dictionary
 #endif

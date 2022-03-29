@@ -13,8 +13,12 @@ bool delaf_dictionary::open()
     try
     {
         _fstream.open(_path);
+        _preps.open("preposicoes.txt", std::wofstream::out);
+        _contracoes.open("contracoes.txt", std::wofstream::out);
         std::locale utf8{"en_US.UTF-8"};
         _fstream.imbue(utf8);
+        _preps.imbue(utf8);
+        _contracoes.imbue(utf8);
     }
     catch (const std::ios_base::failure &e)
     {
@@ -51,6 +55,8 @@ bool delaf_dictionary::parser()
             ret = false;
         }
     }
+    _preps.close();
+    _contracoes.close();
     return ret;
 }
 
@@ -177,6 +183,10 @@ const std::vector<std::wstring> delaf_dictionary::parser_flexion(const std::wstr
 
 lexico dictionary_controller::parser_word(const delaf_word &word)
 {
+    if (word._wclass == L"PREPXPRO")
+    {
+        int i = 0;
+    }
     const auto it = dcategoria.find(word._wclass);
     lexico ret;
 
@@ -216,6 +226,10 @@ lexico dictionary_controller::parser_word(const delaf_word &word)
         else if (*it == L"PREP" || *it == L"CONJ" || *it == L"ADV" || *it == L"PFX" || *it == L"SIGL" ||
                  *it == L"INTERJ")
         {
+            if (*it == L"PREP")
+            {
+                _preps << word._word << std::endl;
+            }
             if (word._flexion.size() > 0 || !word._trace.empty())
             {
                 std::cout << "aqui" << std::endl;
@@ -231,6 +245,7 @@ lexico dictionary_controller::parser_word(const delaf_word &word)
         auto xpos = word._wclass.find(L"X");
         if (xpos != std::wstring::npos)
         {
+            _contracoes << word._word << L" " << word._wclass << std::endl;
             list_con.insert(word._word);
             ret.categoria = dcategoria.find(L"CON");
             auto prefix = word._wclass.substr(0, xpos);

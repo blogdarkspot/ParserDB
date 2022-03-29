@@ -39,6 +39,9 @@ SOFTWARE.
 namespace dictionary
 {
 
+static std::wofstream _preps;
+static std::wofstream _contracoes;
+
 struct delaf_word
 
 {
@@ -93,6 +96,10 @@ class delaf_dictionary
         {
             _dic.split_contraction_word(value);
         }
+    }
+    dictionary<std::wstring> &getDictionary()
+    {
+        return _dic;
     }
 
   private:
