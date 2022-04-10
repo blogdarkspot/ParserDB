@@ -40,7 +40,6 @@ namespace dictionary
 {
 
 static std::wofstream _preps;
-static std::wofstream _contracoes;
 
 struct delaf_word
 
@@ -116,6 +115,7 @@ class delaf_dictionary
     std::unordered_set<std::wstring> _trace;
     std::unordered_set<std::wstring> _flexion;
     std::wifstream _fstream;
+    std::wifstream _contracoes;
     dictionary<std::wstring> _dic;
     dictionary_controller _controller;
 };

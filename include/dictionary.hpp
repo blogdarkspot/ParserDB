@@ -18,7 +18,7 @@ namespace dictionary
 template <typename _Key> class dictionary
 {
 
-    struct storage
+    struct lex_unit
     {
         std::shared_ptr<lexico> data;
         std::size_t canonical;
@@ -26,9 +26,27 @@ template <typename _Key> class dictionary
     };
 
   public:
+    void add_contraction(wstring key, wstring prefix, wstring class_prefix, wstring suffix, wstring class_sufix)
+    {
+        auto sufx = make_pair(suffix, class_sufix);
+        auto prefx = make_pair(prefix, class_prefix);
+        auto tmp = make_pair(prefx, sufx);
+        auto it = _contractions.find(key);
+        if (it != _contractions.end())
+        {
+            it->second.push_back(tmp);
+        }
+        else
+        {
+            vector<pair<pair<wstring, wstring>, pair<wstring, wstring>>> vec;
+            vec.push_back(tmp);
+            _contractions[key] = vec;
+        }
+    }
+
     void add(_Key word, _Key canonical, const std::shared_ptr<lexico> desc)
     {
-        auto sto = std::make_shared<storage>();
+        auto sto = std::make_shared<lex_unit>();
         sto->data = desc;
 
         auto hashWord = hash(word);
@@ -60,94 +78,63 @@ template <typename _Key> class dictionary
         _library_by_word[hashWord].emplace_back(sto);
         _library_by_canonical[hashCanonical].emplace_back(sto);
     }
-
-    bool remove(_Key word)
+    vector<pair<pair<wstring, wstring>, pair<wstring, wstring>>> split_contraction_word(_Key word)
     {
-        return false;
-    }
-
-    std::set<_Key> get_class(_Key word)
-    {
-        std::set<_Key> ret;
-        auto hashWord = hash(word);
-        auto flexions = _library_by_word.find(hashWord);
-
-        if (flexions != _library_by_word.end())
+        auto it = _contractions.find(word);
+        if (it != _contractions.end())
         {
-            for (const auto &value : flexions->second)
-            {
-                ret.insert(*(value->data->categoria));
-            }
+            return it->second;
         }
-
-        return ret;
-    }
-
-    void split_contraction_word(_Key word)
-    {
-        auto hashWord = hash(word);
-        const auto canonicalWord = _library_by_word.find(hashWord);
-        if (canonicalWord != _library_by_word.end())
+        else
         {
-            if (canonicalWord->second[0]->canonical < _canonical_desc.size())
-            {
-                const auto &canonicalDesc = _canonical_desc[canonicalWord->second[0]->canonical];
-                std::wcout << canonicalDesc << std::endl;
-            }
+            return {};
         }
     }
 
-    vector<std::shared_ptr<lexico>> search_by_word(_Key word)
+    vector<std::shared_ptr<lex_unit>> get_lex_unities_by_word(_Key word)
     {
 
         auto hashWord = hash(word);
-        vector<std::shared_ptr<lexico>> ret;
+        vector<std::shared_ptr<lex_unit>> ret;
         for (const auto &lex : _library_by_word[hashWord])
         {
-            ret.emplace_back(lex->data);
+            ret.emplace_back(lex);
         }
         return ret;
     }
 
-    vector<std::shared_ptr<lexico>> search_by_canonical(_Key canonical)
+    vector<std::shared_ptr<lex_unit>> get_lex_unities_by_canonical(_Key canonical)
     {
         auto hashCanonical = hash(canonical);
-        vector<std::shared_ptr<lexico>> ret;
+        vector<std::shared_ptr<lex_unit>> ret;
         for (const auto &lex : _library_by_canonical[hashCanonical])
         {
-            ret.emplace_back(lex->data);
+            ret.emplace_back(lex);
         }
         return ret;
     }
 
-    const std::vector<_Key> get_canonicals(_Key word)
+    wstring get_desc_word(std::shared_ptr<lex_unit> unit)
     {
-        std::vector<_Key> ret;
-
-        auto hashWord = hash(word);
-        auto iword = _library_by_word.find(hashWord);
-
-        if (iword != _library_by_word.end())
+        if (unit->word < _word_desc.size())
         {
-            for (const auto &value : iword->second)
-            {
-                ret.emplace_back(_canonical_desc[value->canonical]);
-            }
+            return _word_desc[unit->word];
         }
-
-        return ret;
+        return L"";
     }
 
-    const std::vector<_Key> get_flexion_from_canonical(_Key canonical)
+    wstring get_desc_lemma(std::shared_ptr<lex_unit> unit)
     {
-        auto hashCanonical = hash(canonical);
-        const auto &iCanonical = _library_by_canonical.find(hashCanonical);
-        std::vector<_Key> ret;
-        for (const auto &value : iCanonical->second)
+        if (unit->canonical < _canonical_desc.size())
         {
-            ret.emplace_back(_word_desc[value->word]);
+            return _canonical_desc[unit->canonical];
         }
-        return ret;
+        return L"";
+    }
+
+    wstring get_class(std::shared_ptr<lex_unit> unit)
+    {
+        return L"";
     }
 
   private:
@@ -156,13 +143,14 @@ template <typename _Key> class dictionary
         return std::hash<_Key>{}(value);
     }
 
-    unordered_map<std::size_t, vector<std::shared_ptr<storage>>> _library_by_word;
-    unordered_map<std::size_t, vector<std::shared_ptr<storage>>> _library_by_canonical;
+    unordered_map<std::size_t, vector<std::shared_ptr<lex_unit>>> _library_by_word;
+    unordered_map<std::size_t, vector<std::shared_ptr<lex_unit>>> _library_by_canonical;
     vector<_Key> _canonical_desc;
     vector<_Key> _word_desc;
 
     std::unordered_set<std::size_t> hash_canonicals;
     std::unordered_set<std::size_t> hash_words;
+    std::unordered_map<wstring, vector<pair<pair<wstring, wstring>, pair<wstring, wstring>>>> _contractions;
 };
 } // namespace dictionary
 #endif

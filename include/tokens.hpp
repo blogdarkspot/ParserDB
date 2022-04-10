@@ -14,8 +14,8 @@ const static std::unordered_set<std::wstring> dcategoria = {L"A",      L"ADV",  
                                                             L"SGL",    L"ABREV", L"V",    L"PRO",  L"DEN",
                                                             L"INTERJ", L"N",     L"CON",  L"PREP", L"PFX"};
 
-const static std::unordered_set<std::wstring> tipo = {L"c",   L"o",   L"M",   L"X",   L"Def", L"Ind",
-                                                      L"Col", L"Dem", L"Rel", L"Int", L"Tra", L"Pos",
+const static std::unordered_set<std::wstring> tipo = {L"c",   L"o",   L"M",   L"X",   L"Def", L"Ind", L"Col",
+                                                      L"Dem", L"Rel", L"Int", L"Tra", L"Pos", L"F",   L"L",
                                                       L"Pes", L"Cd",  L"Sub", L"Cor", L"Pr"};
 
 const static std::unordered_set<std::wstring> traco{L"m", L"f", L"p", L"s", L"A", L"D", L"S", L"1", L"2", L"3"};
@@ -24,6 +24,36 @@ const static std::unordered_set<std::wstring> forma{L"A", L"d", L"N", L"O", L"R"
 
 const static std::unordered_set<std::wstring> tempo{L"W", L"G", L"K", L"P", L"I", L"J", L"F",
                                                     L"Q", L"B", L"T", L"U", L"Y", L"C", L"S"};
+
+enum class Tipo
+{
+};
+
+enum class Forma
+{
+    ACUSATIVA,
+    DATIVA,
+    NORMATIVA,
+    OBLIQUA,
+    REFLEXA
+};
+
+enum class Tempo
+{
+    INFINITIVO,
+    GERUNDIO,
+    PARTICIPIO,
+    PRESENTE_INDICATIVO,
+    PRETERITO_IMPERFEITO_INDICATIVO,
+    PRETERITO_PERFEITO_INDICATIVO,
+    FUTURO_DO_PRESENTE_DO_INDICATIVO,
+    PRETERITO_MAIS_QUE_PERFEITO_DO_INDICATIVO,
+    PRESENTE_DO_SUBJUNTIVO,
+    IMPERFEITO_DO_SUBJUNTIVO,
+    FUTURO_SUBJUNTIVO,
+    IMPERATIVO,
+    FUTURO_DO_PRETERITO
+};
 
 enum class Traco
 {
@@ -37,6 +67,74 @@ enum class Traco
     PRI_PESSOA,
     SEC_PESSOA,
     TER_PESSOA
+};
+
+enum class categoria
+{
+    A,
+    ADV,
+    CONJ,
+    ART,
+    NUM,
+    SGL,
+    ABREV,
+    V,
+    PRO,
+    DEN,
+    INTERJ,
+    N,
+    CON,
+    PREP,
+    PFX
+};
+
+static const std::unordered_set<std::wstring>::const_iterator tempo_enum_to_it(const Tempo &time)
+{
+
+    switch (time)
+    {
+    case Tempo::INFINITIVO: {
+        return tempo.find(L"W");
+    }
+    case Tempo::GERUNDIO: {
+        return tempo.find(L"G");
+    }
+    case Tempo::PARTICIPIO: {
+        return tempo.find(L"K");
+    }
+    case Tempo::PRESENTE_INDICATIVO: {
+        return tempo.find(L"P");
+    }
+    case Tempo::PRETERITO_IMPERFEITO_INDICATIVO: {
+        return tempo.find(L"I");
+    }
+    case Tempo::PRETERITO_PERFEITO_INDICATIVO: {
+        return tempo.find(L"J");
+    }
+    case Tempo::FUTURO_DO_PRESENTE_DO_INDICATIVO: {
+        return tempo.find(L"F");
+    }
+    case Tempo::PRETERITO_MAIS_QUE_PERFEITO_DO_INDICATIVO: {
+        return tempo.find(L"Q");
+    }
+    case Tempo::PRESENTE_DO_SUBJUNTIVO: {
+        return tempo.find(L"S");
+    }
+    case Tempo::IMPERFEITO_DO_SUBJUNTIVO: {
+        return tempo.find(L"T");
+    }
+    case Tempo::FUTURO_SUBJUNTIVO: {
+        return tempo.find(L"U");
+    }
+    case Tempo::IMPERATIVO: {
+        return tempo.find(L"Y");
+    }
+    case Tempo::FUTURO_DO_PRETERITO: {
+        return tempo.find(L"C");
+    }
+    default:
+        return tempo.end();
+    }
 };
 
 static const std::unordered_set<std::wstring>::const_iterator traco_enum_to_it(const Traco &tra)
@@ -76,25 +174,6 @@ static const std::unordered_set<std::wstring>::const_iterator traco_enum_to_it(c
     default:
         return traco.end();
     }
-};
-
-enum class categoria
-{
-    A,
-    ADV,
-    CONJ,
-    ART,
-    NUM,
-    SGL,
-    ABREV,
-    V,
-    PRO,
-    DEN,
-    INTERJ,
-    N,
-    CON,
-    PREP,
-    PFX
 };
 
 static const std::unordered_set<std::wstring>::const_iterator categoria_enum_to_it(const categoria &cat)

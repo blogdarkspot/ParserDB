@@ -41,7 +41,7 @@ static void BM_search_by_word(benchmark::State &state)
 
     for (auto _ : state)
     {
-        dic.search_by_word(out[i]);
+        dic.get_lex_unities_by_word(out[i]);
         i = i + 1 == size ? 0 : ++i;
     }
 }

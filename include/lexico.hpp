@@ -7,12 +7,12 @@
 
 struct lexico
 {
-    std::unordered_set<string>::const_iterator categoria;
-    std::unordered_set<string>::const_iterator tipo;
-    std::vector<std::unordered_set<string>::const_iterator> traco;
-    std::unordered_set<string>::const_iterator forma;
-    std::unordered_set<string>::const_iterator tempo;
-    std::unordered_set<string>::const_iterator prefix;
-    std::unordered_set<string>::const_iterator suffix;
+    std::unordered_set<std::wstring>::const_iterator categoria;
+    std::unordered_set<std::wstring>::const_iterator tipo;
+    std::vector<std::unordered_set<std::wstring>::const_iterator> traco;
+    std::unordered_set<std::wstring>::const_iterator forma;
+    std::unordered_set<std::wstring>::const_iterator tempo;
+    std::unordered_set<std::wstring>::const_iterator prefix;
+    std::unordered_set<std::wstring>::const_iterator suffix;
 };
 #endif

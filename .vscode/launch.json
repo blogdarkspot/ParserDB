@@ -27,8 +27,7 @@
             "name": "benchmark",
             "program": "${workspacefolder}/build/benchmark/lexic_unit_benchmark",
             "args": [],
-            "cwd": "${workspacefolder}/data",
-            "prelaunchtask": "Build Release"
+            "cwd": "${workspacefolder}/data"
         },
         {
             "type": "lldb",

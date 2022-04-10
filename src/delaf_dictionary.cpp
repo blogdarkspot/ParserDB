@@ -13,18 +13,16 @@ bool delaf_dictionary::open()
     try
     {
         _fstream.open(_path);
-        _preps.open("preposicoes.txt", std::wofstream::out);
         _contracoes.open("contracoes.txt", std::wofstream::out);
         std::locale utf8{"en_US.UTF-8"};
         _fstream.imbue(utf8);
-        _preps.imbue(utf8);
         _contracoes.imbue(utf8);
     }
     catch (const std::ios_base::failure &e)
     {
         // TODO: Log error
     }
-    return _fstream.is_open() && _fstream.good();
+    return _fstream.is_open() && _fstream.good() && _contracoes.is_open() && _contracoes.good();
 };
 
 void delaf_dictionary::close()
@@ -55,7 +53,26 @@ bool delaf_dictionary::parser()
             ret = false;
         }
     }
-    _preps.close();
+    while (ret && std::getline(_contracoes, line))
+    {
+        vector<wstring> split;
+        size_t pos = 0;
+        do
+        {
+            auto tmp = line.find_first_of(L" ", pos);
+            if (tmp != line.npos)
+            {
+                split.emplace_back(line.substr(pos, tmp - pos));
+            }
+            else
+            {
+                split.emplace_back(line.substr(pos));
+                break;
+            }
+            pos = tmp + 1;
+        } while (true);
+        _dic.add_contraction(split[0], split[1], split[2], split[3], split[4]);
+    }
     _contracoes.close();
     return ret;
 }
@@ -245,7 +262,6 @@ lexico dictionary_controller::parser_word(const delaf_word &word)
         auto xpos = word._wclass.find(L"X");
         if (xpos != std::wstring::npos)
         {
-            _contracoes << word._word << L" " << word._wclass << std::endl;
             list_con.insert(word._word);
             ret.categoria = dcategoria.find(L"CON");
             auto prefix = word._wclass.substr(0, xpos);
