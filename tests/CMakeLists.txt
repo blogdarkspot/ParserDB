@@ -18,8 +18,12 @@ macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRE
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
 endmacro()
 
-package_add_test_with_libraries(delaf_test delaf_dictionary_test.cpp template::sample "${DATA_PATH}")
-package_add_test_with_libraries(lexico_test dictionary_test.cpp template::sample "${DATA_PATH}")
+#package_add_test_with_libraries(delaf_test delaf_dictionary_test.cpp template::sample "${DATA_PATH}")
+#package_add_test_with_libraries(lexico_test dictionary_test.cpp template::sample "${DATA_PATH}")
+#package_add_test_with_libraries(ceten_test ceten_corpus_test.cpp template::sample "${DATA_PATH}")
+#package_add_test_with_libraries(pcfg_test pcfg_tests.cpp template::sample "${DATA_PATH}")
+package_add_test_with_libraries(utils_test colections_test.cpp template::sample "${DATA_PATH}")
+package_add_test_with_libraries(grammar_test grammar_tests.cpp template::sample "${DATA_PATH}")
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     include(CodeCoverage)

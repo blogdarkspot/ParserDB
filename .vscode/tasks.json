@@ -34,6 +34,8 @@
             "type": "shell",
             "command": "cmake",
             "args": [
+                "-G",
+                "Ninja",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 ".."
             ],
@@ -51,6 +53,8 @@
             "type": "shell",
             "command": "cmake",
             "args": [
+                "-G",
+                "Ninja",
                 "-DCMAKE_BUILD_TYPE=Release",
                 ".."
             ],
@@ -66,7 +70,7 @@
         {
             "label": "Build Debug",
             "type": "shell",
-            "command": "make",
+            "command": "ninja",
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
@@ -81,7 +85,7 @@
         {
             "label": "Build Release",
             "type": "shell",
-            "command": "make",
+            "command": "ninja",
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
@@ -93,7 +97,7 @@
         {
             "label": "Rebuild",
             "type": "shell",
-            "command": "make",
+            "command": "ninja",
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
