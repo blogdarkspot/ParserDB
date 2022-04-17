@@ -1,11 +1,16 @@
 #ifndef __GRAMMAR__
 #define __GRAMMAR__
 
-#include "parser/rules.hpp"
+#include "rules.hpp"
+#include "utils/matrix.hpp"
+#include "utils/unit.hpp"
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
+#include <new>
 #include <ostream>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -60,28 +65,70 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG
         }
     }
 
-    /*
-    _M<_Ry> parser(_ContainerT<_Ky> ordered_list)
+    void add_terminal(_Ky left, _Ky right)
     {
-        auto ret = _M<_Ry>(ordered_list.size() + 1, ordered_list.size() + 1);
+        _terminals[right].insert(left);
+    }
+
+    utils::colections::matrix<unit<_Ky, std::set>> parser(_ContainerT<_Ky> ordered_list)
+    {
+        auto ret = utils::colections::matrix<unit<_Ky, std::set>>(ordered_list.size() + 1, ordered_list.size() + 1);
 
         for (int j = 1; j <= ordered_list.size(); ++j)
         {
-            auto _terminal_grammar = terminals[ordered_list[j]];
+            auto _terminal_grammar = _terminals[ordered_list[j - 1]];
 
             for (const auto &r : _terminal_grammar)
             {
-                ret[j - 1][j] += r->get_right_side()[0];
-            }
+                ret[j - 1][j] += r;
+                _ContainerT<_Ky> grammarR; // = {value, value2};
 
-            for (int i = j - 2; i > 0; --i)
-            {
-                for (int k = i + i; k < j - 1; ++k)
+                grammarR.emplace_back(r);
+
+                for (const auto &[key, rules] : _rules)
                 {
+                    for (const auto &rule : rules)
+                    {
+                        if (rule->_rule->is_valid(grammarR))
+                        {
+                            ret[j - 1][j] += rule->_rule->get_left_side();
+                        }
+                    }
+                }
+            }
+            for (int i = j - 2; i >= 0; --i)
+            {
+                for (int k = i + 1; k <= j - 1; ++k)
+                {
+                    auto first = ret[i][k].get();
+                    auto second = ret[k][j].get();
+
+                    for (const auto &value : first)
+                    {
+                        for (const auto &value2 : second)
+                        {
+
+                            _ContainerT<_Ky> grammarR; // = {value, value2};
+                            grammarR.emplace_back(value);
+                            grammarR.emplace_back(value2);
+
+                            for (const auto &[key, rules] : _rules)
+                            {
+                                for (const auto &rule : rules)
+                                {
+                                    if (rule->_rule->is_valid(grammarR))
+                                    {
+                                        ret[i][j] += rule->_rule->get_left_side();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-    }*/
+        return ret;
+    }
 
     friend std::wostream &operator<<(std::wostream &os, const PCFG<_Ky, _ContainerT> &r)
     {
@@ -96,8 +143,8 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG
     }
 
   private:
-    // std::map<std::string, std::vector<std::shared_ptr<rule<_Ky, _C>>>> terminals;
     std::map<_Ky, std::vector<std::shared_ptr<ProbabilisticRule>>> _rules;
+    std::map<_Ky, std::set<_Ky>> _terminals;
 };
-}; // namespace grammar
+} // namespace grammar
 #endif

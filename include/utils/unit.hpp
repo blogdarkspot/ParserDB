@@ -31,6 +31,23 @@ template <typename _Ty, template <class...> class _ContainerTy> struct unit
         return no_terminals;
     }
 
+    friend std::wostream &operator<<(std::wostream &os, const unit<_Ty, _ContainerTy> &r)
+    {
+        if (!r.no_terminals.empty())
+        {
+            for (const auto &value : r.no_terminals)
+            {
+                os << value << L",";
+            }
+        }
+        else
+        {
+            os << L"X";
+        }
+
+        return os;
+    }
+
   private:
     _ContainerTy<_Ty> no_terminals;
 };

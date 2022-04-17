@@ -67,8 +67,8 @@ class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
 
     bool is_valid(ContainerT<_Ty> right)
     {
-        bool ret = right.size() == _right_side.size();
-        for (int i = 0; i < _right_side.size() && ret; ++i)
+        bool ret = true;
+        for (int i = 0; i < right.size(); ++i)
         {
             if (_right_side[i] != right[i])
             {

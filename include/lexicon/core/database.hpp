@@ -1,7 +1,7 @@
 #ifndef __DICTIONARY__
 #define __DICTIONARY__
 
-#include "lexico.hpp"
+#include "types.h"
 #include <iostream>
 #include <memory>
 #include <set>
@@ -12,18 +12,13 @@
 
 using namespace std;
 
-namespace dictionary
+namespace lexicon
 {
 
-template <typename _Key> class dictionary
-{
 
-    struct lex_unit
-    {
-        std::shared_ptr<lexico> data;
-        std::size_t canonical;
-        std::size_t word;
-    };
+
+template <typename _Key> class database
+{
 
   public:
     void add_contraction(wstring key, wstring prefix, wstring class_prefix, wstring suffix, wstring class_sufix)

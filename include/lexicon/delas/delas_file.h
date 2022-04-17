@@ -33,76 +33,29 @@ SOFTWARE.
 #include <unordered_set>
 #include <vector>
 
-#include "dictionary.hpp"
-#include "lexico.hpp"
+#include "type.h"
 
-namespace dictionary
+namespace lexicon::delas
 {
 
-static std::wofstream _preps;
-
-struct delaf_word
-
-{
-    delaf_word(const std::wstring &word, const std::wstring &canonical, const std::wstring &wclass,
-               const std::wstring &trace, const std::vector<std::wstring> &flexion)
-        : _word(std::move(word)), _canonical(std::move(canonical)), _wclass(std::move(wclass)),
-          _trace(std::move(trace)), _flexion(std::move(flexion))
-    {
-    }
-    const std::wstring _word;
-    const std::wstring _canonical;
-    const std::wstring _wclass;
-    const std::wstring _trace;
-    const std::vector<std::wstring> _flexion;
-};
-
-class dictionary_controller
-{
-  public:
-    lexico parser_word(const delaf_word &word);
-    void fillNum(lexico &lex, const delaf_word &word) const;
-    void fillArt(lexico &lex, const delaf_word &word) const;
-    void fillV(lexico &lex, const delaf_word &word) const;
-    void fillN(lexico &lex, const delaf_word &word) const;
-    void fillA(lexico &lex, const delaf_word &word) const;
-    void fillABREV(lexico &lex, const delaf_word &word) const;
-    void fillPRO(lexico &lex, const delaf_word &word) const;
-
-    std::unordered_set<std::wstring> list_con;
-};
-
-class delaf_dictionary
+class DelasFile
 {
 
   public:
-    delaf_dictionary(const std::string &path) : _path(path)
+    DelasFile(const std::string &path) : _path(path)
     {
     }
 
     bool open();
     void close();
-    bool parser();
 
-    const std::vector<delaf_word> &get_words() const
-    {
-        return _words;
-    }
+    std::shared_ptr<DelasType> get_next();
 
-    void print_values()
-    {
-        for (const auto &value : _controller.list_con)
-        {
-            _dic.split_contraction_word(value);
-        }
-    }
-    dictionary<std::wstring> &getDictionary()
-    {
-        return _dic;
-    }
+    const std::vector<std::shared_ptr<DelasType>> get_all();
 
   private:
-    const delaf_word parser_line(const std::wstring &) const;
+
+    std::shared_ptr<DelasType> parser_line(const std::wstring &line);
     const std::wstring parser_word(const std::wstring &line, std::size_t &pos) const;
     const std::wstring parser_canonical(const std::wstring &line, std::size_t &pos) const;
     const std::wstring parser_class(const std::wstring &line, std::size_t &pos) const;
@@ -110,14 +63,11 @@ class delaf_dictionary
     const std::vector<std::wstring> parser_flexion(const std::wstring &line, std::size_t &pos) const;
 
     std::string _path;
-    std::vector<delaf_word> _words;
     std::unordered_set<std::wstring> _class;
     std::unordered_set<std::wstring> _trace;
     std::unordered_set<std::wstring> _flexion;
     std::wifstream _fstream;
     std::wifstream _contracoes;
-    dictionary<std::wstring> _dic;
-    dictionary_controller _controller;
 };
 } // namespace dictionary
 #endif

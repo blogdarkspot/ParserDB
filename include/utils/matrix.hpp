@@ -18,6 +18,13 @@ template <typename _Ty> class matrix
         }
     }
 
+    _Ty get(int row, int col)
+    {
+        auto r = _data.get()[row].get(); 
+        auto c = r[row];
+        return c;
+    }
+
     _Ty *operator[](const int &index)
     {
         if (_data.get()[index].get() == nullptr)
@@ -30,6 +37,19 @@ template <typename _Ty> class matrix
     matrix &operator+=(const matrix &other)
     {
         return *this;
+    }
+
+    friend std::wostream &operator<<(std::wostream &os, const matrix<_Ty> &r)
+    {
+        for (int i = 0; i < r._rows; ++i)
+        {
+            for (int j = 0; j < r._cols; ++j)
+            {
+                os << L" " << r._data[i][j] << L" ";
+            }
+            os << std::endl;
+        }
+        return os;
     }
 
     std::shared_ptr<std::shared_ptr<_Ty>> _data;

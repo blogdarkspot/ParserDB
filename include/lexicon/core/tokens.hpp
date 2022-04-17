@@ -1,16 +1,15 @@
 #ifndef __TOKENS__
 #define __TOKENS__
 
-#include "string_def.hpp"
 #include <unordered_set>
 
 #include <cwctype>
 #include <string>
 #include <vector>
 
-namespace dictionary
+namespace lexicon
 {
-const static std::unordered_set<std::wstring> dcategoria = {L"A",      L"ADV",   L"CONJ", L"ART",  L"NUM",
+const static std::unordered_set<std::wstring> CategoryType = {L"A",      L"ADV",   L"CONJ", L"ART",  L"NUM",
                                                             L"SGL",    L"ABREV", L"V",    L"PRO",  L"DEN",
                                                             L"INTERJ", L"N",     L"CON",  L"PREP", L"PFX"};
 
@@ -181,52 +180,52 @@ static const std::unordered_set<std::wstring>::const_iterator categoria_enum_to_
     switch (cat)
     {
     case categoria::A: {
-        return dcategoria.find(L"A");
+        return CategoryType.find(L"A");
     }
     case categoria::ADV: {
-        return dcategoria.find(L"ADV");
+        return CategoryType.find(L"ADV");
     }
     case categoria::CONJ: {
-        return dcategoria.find(L"CONJ");
+        return CategoryType.find(L"CONJ");
     }
     case categoria::ART: {
-        return dcategoria.find(L"ART");
+        return CategoryType.find(L"ART");
     }
     case categoria::NUM: {
-        return dcategoria.find(L"NUM");
+        return CategoryType.find(L"NUM");
     }
     case categoria::SGL: {
-        return dcategoria.find(L"SGL");
+        return CategoryType.find(L"SGL");
     }
     case categoria::ABREV: {
-        return dcategoria.find(L"ABREV");
+        return CategoryType.find(L"ABREV");
     }
     case categoria::V: {
-        return dcategoria.find(L"V");
+        return CategoryType.find(L"V");
     }
     case categoria::PRO: {
-        return dcategoria.find(L"PRO");
+        return CategoryType.find(L"PRO");
     }
     case categoria::DEN: {
-        return dcategoria.find(L"DEN");
+        return CategoryType.find(L"DEN");
     }
     case categoria::INTERJ: {
-        return dcategoria.find(L"INTERJ");
+        return CategoryType.find(L"INTERJ");
     }
     case categoria::N: {
-        return dcategoria.find(L"N");
+        return CategoryType.find(L"N");
     }
     case categoria::CON: {
-        return dcategoria.find(L"CON");
+        return CategoryType.find(L"CON");
     }
     case categoria::PREP: {
-        return dcategoria.find(L"PREP");
+        return CategoryType.find(L"PREP");
     }
     case categoria::PFX: {
-        return dcategoria.find(L"PFX");
+        return CategoryType.find(L"PFX");
     }
     default:
-        return dcategoria.end();
+        return CategoryType.end();
     }
 }
 
