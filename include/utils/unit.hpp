@@ -2,18 +2,44 @@
 #define __UNIT__
 
 #include <memory>
+#include <utility>
+
+template<typename _Ty>
+struct rule_description 
+{
+    _Ty value;
+    std::shared_ptr<rule_description<_Ty>> left = nullptr;
+    std::shared_ptr<rule_description<_Ty>> right = nullptr;
+
+    void set_left(std::shared_ptr<rule_description<_Ty>> l)
+    {
+        left = l;
+    }
+
+    void set_right(std::shared_ptr<rule_description<_Ty>> r)
+    {
+        right = r;
+    }
+
+    bool operator< (const rule_description<_Ty>& rhs)
+    {
+        return left < rhs.left && right < rhs.right && value != rhs.value;
+    }
+};
 
 template <typename _Ty, template <class...> class _ContainerTy> struct unit
 {
     using unit_ptr = std::shared_ptr<unit<_Ty, _ContainerTy>>;
 
-    unit &operator+=(const _Ty &value)
+    
+
+    unit &operator+=(const std::shared_ptr<rule_description<_Ty>> &value)
     {
         no_terminals.insert(value);
         return *this;
     }
 
-    unit &operator=(const _Ty &value)
+    unit &operator=(const std::shared_ptr<rule_description<_Ty>> &value)
     {
         no_terminals.clear();
         no_terminals.insert(value);
@@ -26,7 +52,7 @@ template <typename _Ty, template <class...> class _ContainerTy> struct unit
         return *this;
     }
 
-    _ContainerTy<_Ty> get()
+    _ContainerTy<std::shared_ptr<rule_description<_Ty>>> get()
     {
         return no_terminals;
     }
@@ -47,8 +73,7 @@ template <typename _Ty, template <class...> class _ContainerTy> struct unit
 
         return os;
     }
-
   private:
-    _ContainerTy<_Ty> no_terminals;
+    _ContainerTy<std::shared_ptr<rule_description<_Ty>>> no_terminals;
 };
 #endif

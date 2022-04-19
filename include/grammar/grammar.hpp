@@ -78,24 +78,13 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG
         {
             auto _terminal_grammar = _terminals[ordered_list[j - 1]];
 
-            for (const auto &r : _terminal_grammar)
+            for(const auto& t : _terminal_grammar)
             {
-                ret[j - 1][j] += r;
-                _ContainerT<_Ky> grammarR; // = {value, value2};
-
-                grammarR.emplace_back(r);
-
-                for (const auto &[key, rules] : _rules)
-                {
-                    for (const auto &rule : rules)
-                    {
-                        if (rule->_rule->is_valid(grammarR))
-                        {
-                            ret[j - 1][j] += rule->_rule->get_left_side();
-                        }
-                    }
-                }
+                auto new_value = std::make_shared<rule_description<_Ky>>();
+                new_value->value = t;
+                ret[j -1][j] += new_value;
             }
+
             for (int i = j - 2; i >= 0; --i)
             {
                 for (int k = i + 1; k <= j - 1; ++k)
@@ -109,8 +98,8 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG
                         {
 
                             _ContainerT<_Ky> grammarR; // = {value, value2};
-                            grammarR.emplace_back(value);
-                            grammarR.emplace_back(value2);
+                            grammarR.emplace_back(value->value);
+                            grammarR.emplace_back(value2->value);
 
                             for (const auto &[key, rules] : _rules)
                             {
@@ -118,7 +107,11 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG
                                 {
                                     if (rule->_rule->is_valid(grammarR))
                                     {
-                                        ret[i][j] += rule->_rule->get_left_side();
+                                        auto new_value = std::make_shared<rule_description<_Ky>>();
+                                        new_value->value = rule->_rule->get_left_side();
+                                        new_value->left = value;
+                                        new_value->right = value2;
+                                        ret[i][j] += new_value;
                                     }
                                 }
                             }

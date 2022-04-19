@@ -5,10 +5,33 @@
 #include "input_rules.hpp"
 #include "utils/matrix.hpp"
 #include <boost/python/list.hpp>
+#include "utils/unit.hpp"
 #include <iostream>
 #include <memory>
 #include <set>
 #include <string>
+
+void printBT(const std::wstring& prefix, const std::shared_ptr<rule_description<std::wstring>> node, bool isLeft)
+{
+    if( node != nullptr )
+    {
+        std::wcout << prefix;
+
+        std::wcout << (isLeft ? L"├──" : L"└──" );
+
+        // print the value of the node
+        std::wcout << node->value << std::endl;
+
+        // enter the next tree level - left and right branch
+        printBT( prefix + (isLeft ? L"│   " : L"    "), node->left, true);
+        printBT( prefix + (isLeft ? L"│   " : L"    "), node->right, false);
+    }
+}
+
+void printBT(const std::shared_ptr<rule_description<std::wstring>> node)
+{
+    printBT(L"", node, false);    
+}
 
 namespace grammar{ 
 class grammar
@@ -53,9 +76,18 @@ class grammar
 
         auto map = pcfg->parser(vtokens);
 
+        auto unit = map[0][map._cols - 1];
+        for(const auto& v : unit.get())
+        {
+            if(v->value == L"S")
+            {
+                printBT(v);
+            }
+        }
+
         utils::colections::matrix<boost::python::list> ret(map._rows, map._cols);
         boost::python::list ret2;
-
+        /*
         for (int i = 0; i < map._rows; ++i)
         {
             boost::python::list tmp;
@@ -70,7 +102,7 @@ class grammar
             }
 
             ret2.append(tmp);
-        }
+        }*/
         return ret2;
     }
 

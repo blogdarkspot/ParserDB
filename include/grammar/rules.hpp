@@ -2,31 +2,7 @@
 #define __RULES__
 #include <memory>
 #include <ostream>
-/*
-2 APPENDIX C • STATISTICAL CONSTITUENCY PARSING
-N a set of non-terminal symbols (or variables)
-Σ a set of terminal symbols (disjoint from N)
-R a set of rules or productions, each of the form A → β [p],
-where A is a non-terminal,
-β is a string of symbols from the infinite set of strings (Σ ∪ N)∗,
-and p is a number between 0 and 1 expressing P(β |A)
-S a designated start symbol
-That is, a PCFG differs from a standard CFG by augmenting each rule in R with
-a conditional probability:
-A → β [p] (C.1)
-Here p expresses the probability that the given non-terminal A will be expanded
-to the sequence β . That is, p is the conditional probability of a given expansion β
-given the left-hand-side (LHS) non-terminal A. We can represent this probability as
-P(A → β )
-or as
-P(A → β |A)
-or as
-P(RHS|LHS)
-Thus, if we consider all the possible expansions of a non-terminal, the sum of their
-probabilities must be 1: ∑
-β
-P(A → β ) = 1
-*/
+
 namespace grammar::cfg
 {
 
