@@ -22,6 +22,3 @@ result = g.check(tokens)
 #for i in range(0, result.rows):
 #    for j in range(0, result.cols):
 #        print(result.get(i, j))
-
-print(result)
-

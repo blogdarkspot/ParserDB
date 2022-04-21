@@ -4,29 +4,48 @@
 #include <memory>
 #include <utility>
 
-template<typename _Ty>
-struct rule_description 
+namespace grammar::cfg
 {
-    _Ty value;
-    std::shared_ptr<rule_description<_Ty>> left = nullptr;
-    std::shared_ptr<rule_description<_Ty>> right = nullptr;
 
-    void set_left(std::shared_ptr<rule_description<_Ty>> l)
-    {
-        left = l;
-    }
-
-    void set_right(std::shared_ptr<rule_description<_Ty>> r)
-    {
-        right = r;
-    }
-
-    bool operator< (const rule_description<_Ty>& rhs)
-    {
-        return left < rhs.left && right < rhs.right && value != rhs.value;
-    }
+template<typename _StringType>
+struct symbol
+{
+    _StringType value;
+    double probability;
+    bool is_terminal;
+    std::shared_ptr<symbol<_StringType>> left = nullptr;
+    std::shared_ptr<symbol<_StringType>> right = nullptr;
 };
 
+template<typename _StringType>
+struct lexicon : symbol<_StringType>
+{
+    _StringType lex;
+};
+
+template<typename _StringType>
+struct constituency : public symbol<_StringType>
+{
+
+    void set_left(std::shared_ptr<constituency<_StringType>> l)
+    {
+        symbol<_StringType>::left = l;
+    }
+
+    void set_right(std::shared_ptr<constituency<_StringType>> r)
+    {
+        symbol<_StringType>::right = r;
+    }
+
+    /*
+    bool operator< (const constituency<_StringType>& rhs)
+    {
+        return left < rhs.left && right < rhs.right && symbol::value != rhs.value;
+    }*/
+};
+};
+
+/*
 template <typename _Ty, template <class...> class _ContainerTy> struct unit
 {
     using unit_ptr = std::shared_ptr<unit<_Ty, _ContainerTy>>;
@@ -75,5 +94,5 @@ template <typename _Ty, template <class...> class _ContainerTy> struct unit
     }
   private:
     _ContainerTy<std::shared_ptr<rule_description<_Ty>>> no_terminals;
-};
+};*/
 #endif

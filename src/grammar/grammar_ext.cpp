@@ -1,17 +1,20 @@
 #include <boost/python.hpp>
 
+#include "constituency.hpp"
 #include "rules.hpp"
-#include "grammar.hpp"
+#include "pcfg.hpp"
+#include "cky.hpp"
+#include "igrammar.hpp"
 #include "input_rules.hpp"
 #include "utils/matrix.hpp"
 #include <boost/python/list.hpp>
-#include "utils/unit.hpp"
 #include <iostream>
 #include <memory>
 #include <set>
 #include <string>
 
-void printBT(const std::wstring& prefix, const std::shared_ptr<rule_description<std::wstring>> node, bool isLeft)
+
+void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::symbol<std::wstring>> node, bool isLeft)
 {
     if( node != nullptr )
     {
@@ -19,47 +22,57 @@ void printBT(const std::wstring& prefix, const std::shared_ptr<rule_description<
 
         std::wcout << (isLeft ? L"├──" : L"└──" );
 
+        bool is_terminal = node->is_terminal;
         // print the value of the node
-        std::wcout << node->value << std::endl;
+        std::wcout << node->value <<  (is_terminal ? L"──" : L"\n");
 
+        if(is_terminal)
+        {
+            std::wcout << (std::static_pointer_cast<grammar::cfg::lexicon<std::wstring>>(node))->lex << std::endl;
+        }
         // enter the next tree level - left and right branch
         printBT( prefix + (isLeft ? L"│   " : L"    "), node->left, true);
         printBT( prefix + (isLeft ? L"│   " : L"    "), node->right, false);
     }
 }
 
-void printBT(const std::shared_ptr<rule_description<std::wstring>> node)
+void printBT(const std::shared_ptr<grammar::cfg::symbol<std::wstring>> node)
 {
     printBT(L"", node, false);    
 }
+
 
 namespace grammar{ 
 class grammar
 {
   public:
 
-    grammar() : pcfg(new PCFG<std::wstring, std::vector>())
+    grammar() : _pcfg(new cfg::PCFG<std::wstring, std::vector>()),
+    _cky(new parser::cky<std::wstring>())
     {
-
+        _pcfg->set_start_symbol(L"S");
+        _cky->set_cfg(_pcfg);
     }
 
     void add_rule(std::wstring rule)
     {
         ::grammar::cfg::file file;
         auto r = file.parser(rule);
-        
         if(r != nullptr)
         {
-            pcfg->add_rule(r);
+            _pcfg->set_rules(r);
         }
         else {
-            std::cout << "rule failed" << std::endl;
+            std::cout << "rule faile" << std::endl;
         }
     }
 
     void add_terminal(std::wstring left, std::wstring right)
     {
-        pcfg->add_terminal(left, right);
+        std::vector<std::wstring> _right;
+        _right.emplace_back(right);
+        auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule<std::wstring, std::vector>>(left, _right, true);
+        _pcfg->set_terminals(terminal);
     }
 
     boost::python::list check(boost::python::list tokens)
@@ -74,19 +87,16 @@ class grammar
           vtokens.emplace_back(boost::python::extract<std::wstring>(tokens[i]));
         }
 
-        auto map = pcfg->parser(vtokens);
+        auto trees = _cky->get_trees(vtokens);
 
-        auto unit = map[0][map._cols - 1];
-        for(const auto& v : unit.get())
+        for(const auto& v : trees)
         {
-            if(v->value == L"S")
-            {
                 printBT(v);
-            }
         }
 
-        utils::colections::matrix<boost::python::list> ret(map._rows, map._cols);
+//        utils::colections::matrix<boost::python::list> ret(map._rows, map._cols); 
         boost::python::list ret2;
+
         /*
         for (int i = 0; i < map._rows; ++i)
         {
@@ -109,7 +119,7 @@ class grammar
     std::wstring rules_info()
     {
         std::wstringstream ss;
-        ss << *pcfg ;
+     //   ss << *pcfg ;
         return ss.str();
     }
 
@@ -120,7 +130,8 @@ class grammar
     }
 
   private:
-    std::shared_ptr<PCFG<std::wstring, std::vector>> pcfg;
+    std::shared_ptr<cfg::PCFG<std::wstring, std::vector>> _pcfg;
+    std::shared_ptr<parser::iparser<std::wstring>> _cky;
 };
 
 };
