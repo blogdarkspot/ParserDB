@@ -79,8 +79,8 @@ class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
 template <class _StringT, template <class...> class _ContainerT>
 struct ProbabilisticRule : public rule<_StringT, _ContainerT>
 {
-    unsigned int total;
-    unsigned int times;
+    unsigned int total = 0;
+    unsigned int times = 0;
 
     ProbabilisticRule(_StringT left, _ContainerT<_StringT> right, bool is_terminal)
         : rule<_StringT, _ContainerT>(left, right, is_terminal)
@@ -89,8 +89,7 @@ struct ProbabilisticRule : public rule<_StringT, _ContainerT>
 
     friend std::wostream &operator<<(std::wostream &os, const ProbabilisticRule &r)
     {
-        os << L"Total left : " << r.total << L" Total match " << r.times << L" Height " << r.times / r.total << L"\n"
-           << static_cast<rule<_StringT, _ContainerT>>(r);
+        os << static_cast<rule<_StringT, _ContainerT>>(r);
         return os;
     }
 };

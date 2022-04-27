@@ -2,24 +2,23 @@
 #include "core/types.h"
 #include "delas/type.h"
 #include "core/tokens.hpp"
+#include <iostream>
 
 namespace lexicon::delas
 {
 
 DelasToLexicon::_LexiconType DelasToLexicon::parser_word(const DelasType& word)
 {
-    if (word._wclass == L"PREPXPRO")
-    {
-        int i = 0;
-    }
-
     const auto it = CategoryType.find(word._wclass);
+
     DelasToLexicon::_LexiconType ret;
 
     if (it != CategoryType.end())
     {
         // categoria
         ret.category->categoria = it;
+        ret.entry  = word._word;
+        ret.lemma = word._canonical;
 
         if (*it == L"NUM")
         {
@@ -63,6 +62,8 @@ DelasToLexicon::_LexiconType DelasToLexicon::parser_word(const DelasType& word)
         if (xpos != std::wstring::npos)
         {
             ret.category->categoria = CategoryType.find(L"CON");
+            ret.entry = word._word;
+            ret.lemma = word._canonical;
             auto prefix = word._wclass.substr(0, xpos);
             auto suffix = word._wclass.substr(xpos + 1);
 

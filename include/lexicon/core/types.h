@@ -28,6 +28,8 @@ struct LexiconType {
 
   T entry;
   T lemma;
+  size_t calls;
+  double p;
   std::shared_ptr<Category>  category;
 };
 

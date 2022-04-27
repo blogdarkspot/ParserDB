@@ -38,6 +38,7 @@ private:
         
         for(const auto& pos : pos0n)
         {
+            std::wcout << "last pos " << pos->value << std::endl;
             if(pos->value == _cfg->get_start_symbol())
             {
                 ret.emplace_back(pos);
@@ -54,6 +55,7 @@ private:
         for (int j = 1; j <= tokens.size(); ++j)
         {
             auto lexicons = _cfg->get_lexicon(tokens[j - 1]);
+
             for(const auto& lex : lexicons)
             {
                 auto tmp = std::make_shared<grammar::cfg::lexicon<_StringType>>();
@@ -83,6 +85,7 @@ private:
                                  new_value->left = value;
                                  new_value->right = value2;
                                  ret[i][j].emplace_back(new_value);
+                                 std::wcout << L"new rule " << *rule << std::endl;
                             }
                         }
                     }

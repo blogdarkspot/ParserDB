@@ -13,45 +13,20 @@ bool DelasFile::open()
     try
     {
         _fstream.open(_path);
-      //  _contracoes.open("contracoes.txt", std::wofstream::out);
         std::locale utf8{"en_US.UTF-8"};
         _fstream.imbue(utf8);
-     //   _contracoes.imbue(utf8);
     }
     catch (const std::ios_base::failure &e)
     {
         // TODO: Log error
     }
-    return _fstream.is_open() && _fstream.good() && _contracoes.is_open() && _contracoes.good();
+    return _fstream.is_open() && _fstream.good(); //&& _contracoes.is_open() && _contracoes.good();
 };
 
 void DelasFile::close()
 {
     _fstream.close();
 }
-
-/*
-    while (ret && std::getline(_contracoes, line))
-    {
-        vector<wstring> split;
-        size_t pos = 0;
-        do
-        {
-            auto tmp = line.find_first_of(L" ", pos);
-            if (tmp != line.npos)
-            {
-                split.emplace_back(line.substr(pos, tmp - pos));
-            }
-            else
-            {
-                split.emplace_back(line.substr(pos));
-                break;
-            }
-            pos = tmp + 1;
-        } while (true);
-        _dic.add_contraction(split[0], split[1], split[2], split[3], split[4]);
-    }
-    _contracoes.close();*/
 
 const std::vector<std::shared_ptr<DelasType>> DelasFile::get_all()
 {
@@ -86,6 +61,10 @@ std::shared_ptr<DelasType> DelasFile::get_next()
     if(std::getline(_fstream, line))
     {
         ret = parser_line(line);
+        _eof = false;
+    }
+    else {
+        _eof = true;
     }
     return ret;
 }

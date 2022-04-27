@@ -27,8 +27,20 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
                 std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(terminal));
     }
 
+    void clear_rules()
+    {
+        _rules.clear();
+        _rules_terminal.clear();
+    }
+
+    void clear_terminals()
+    {
+        _terminals.clear();
+    }
+
     virtual void set_rules(typename cfg::icfg<_Ky>::rule_ptr rule) override
     {
+    
         if (rule->get_right_side().size() == 1)
         {
             _rules_terminal[rule->get_left_side()].emplace_back(
@@ -36,8 +48,8 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
         }
         else
         {
-            _rules[rule->get_left_side()].emplace_back(
-                std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule));
+            auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule);
+            _rules[rule->get_left_side()].emplace_back(tmp);
 
             auto it = _rules.find(rule->get_left_side());
 
@@ -61,9 +73,27 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
 
     virtual std::vector<typename cfg::icfg<_Ky>::rule_ptr> get_lexicon(_Ky lex) override
     {
-        std::vector<typename cfg::icfg<_Ky>::rule_ptr> ret;
-
-        return _terminals[lex];
+        std::vector<typename cfg::icfg<_Ky>::rule_ptr> ret = _terminals[lex];
+        auto tmp = ret; 
+        for(const auto i : tmp)
+        {
+            _ContainerT<_Ky> grammarR; // = {value, value2};
+            grammarR.emplace_back(i->get_left_side());
+            
+            for (const auto &[key, rules] : _rules_terminal)
+            {
+                for( const auto &rule : rules)
+                {
+                    
+                    if(rule->is_valid(grammarR))
+                    {
+                        auto tmp1 = std::make_shared<ProbabilisticRule<_Ky, std::vector>>(rule->get_left_side(), i->get_right_side(), true);
+                        ret.emplace_back(tmp1);
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     virtual std::vector<typename cfg::icfg<_Ky>::rule_ptr> get_match_rules(_Ky first, _Ky second) override
@@ -97,6 +127,20 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
     friend std::wostream &operator<<(std::wostream &os, const PCFG<_Ky, _ContainerT> &r)
     {
         for (const auto &[key, value] : r._rules)
+        {
+            for (const auto &prule : value)
+            {
+                os << *prule << std::endl;
+            }
+        }
+        for (const auto &[key, value] : r._rules_terminal)
+        {
+            for (const auto &prule : value)
+            {
+                os << *prule << std::endl;
+            }
+        }
+        for (const auto &[key, value] : r._terminals)
         {
             for (const auto &prule : value)
             {

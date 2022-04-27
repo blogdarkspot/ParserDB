@@ -8,9 +8,9 @@ namespace lexicon::delas
 {
 class DelasToLexicon
 {
-    using _LexiconType = lexicon::LexiconType<std::wstring>;
-
   public:
+    using _LexiconType = ::lexicon::LexiconType<std::wstring>;
+
     static _LexiconType parser_word(const DelasType &word);
 
   private:

@@ -42,13 +42,21 @@ class DelasFile
 {
 
   public:
+    DelasFile() = default;
+
     DelasFile(const std::string &path) : _path(path)
     {
     }
-
+    void set_path(const std::string &path)
+    {
+      _path = path;
+    }
     bool open();
     void close();
-
+    bool eof() 
+    {
+      return _eof;
+    }
     std::shared_ptr<DelasType> get_next();
 
     const std::vector<std::shared_ptr<DelasType>> get_all();
@@ -62,12 +70,14 @@ class DelasFile
     const std::wstring parser_trace(const std::wstring &line, std::size_t &pos) const;
     const std::vector<std::wstring> parser_flexion(const std::wstring &line, std::size_t &pos) const;
 
+    
+
     std::string _path;
     std::unordered_set<std::wstring> _class;
     std::unordered_set<std::wstring> _trace;
     std::unordered_set<std::wstring> _flexion;
     std::wifstream _fstream;
-    std::wifstream _contracoes;
+    bool _eof = false;
 };
 } // namespace dictionary
 #endif

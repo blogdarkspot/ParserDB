@@ -21,5 +21,19 @@ struct DelasType
     const std::vector<std::wstring> _flexion;
 };
 
+struct ContractionType
+{
+    ContractionType(const std::wstring &word, const std::wstring &prefix_word, const std::wstring &prefix_class,
+                    const std::wstring &suffix_word, const std::wstring &suffix_class)
+        : _word(word), _prefix_word(prefix_word), _prefix_class(prefix_class), _suffix_word(suffix_word),
+          _suffix_class(suffix_class)
+    {
+    }
+    const std::wstring _word;
+    const std::wstring _prefix_word;
+    const std::wstring _prefix_class;
+    const std::wstring _suffix_word;
+    const std::wstring _suffix_class;
+};
 };
 #endif

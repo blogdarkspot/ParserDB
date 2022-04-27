@@ -1,0 +1,34 @@
+S -> NP VP
+S -> VP NP
+S -> VP
+S -> ADVP S
+DP -> ART
+DP -> ART NP
+DP -> ART NumP
+DP -> ART PossP
+DP -> PRO
+DP -> PRO NP
+DP -> PRO NumP
+DP -> PRO PossP
+NP -> N
+NP -> NP AP
+NP -> AP NP
+NP -> NP PP
+NP -> N PP
+NumP -> NUM NP
+NumP -> NUM PP
+PossP -> PRO NP
+PossP -> NP PRO
+PossP -> PRO NumP
+AP -> A
+AP -> ADVP AP
+AP -> AP ADVP
+AP -> AP PP
+AP -> A PP
+AP -> A CP
+PP -> ADVP PP
+PP -> PREP DP
+PP -> PREP ADVP
+PP -> PREP CP
+PP -> PREP PP
+PP -> PREP
