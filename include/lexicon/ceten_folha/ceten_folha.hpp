@@ -9,8 +9,9 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <set>
 
-namespace visl_cg
+namespace corpus::folha
 {
 
 struct lex_unit_ceten
@@ -28,41 +29,26 @@ struct lex_unit_ceten
 
 struct corpus_unit
 {
-    corpus_unit(int size) : _size(size)
+    corpus_unit() 
     {
-        _tree = new int *[size + 1];
-        for (int i = 0; i <= size; ++i)
-        {
-            _tree[i] = new int[size + 1];
-            std::memset(_tree[i], 0, sizeof(int) * (size + 1));
-        }
-        _lexicon.resize(size + 1);
     }
 
     void add_lex_unit_ceten(std::shared_ptr<lex_unit_ceten> unit)
     {
-        _tree[unit->parent][unit->pos] = 1;
-        if (unit->parent == 0)
-            _roots.emplace_back(unit->pos);
-
-        _lexicon[unit->pos] = unit;
+        _lexicon.emplace_back(unit);
     }
 
     ~corpus_unit()
     {
-        for (int i = 0; i <= _size; ++i)
-        {
-            delete[] _tree[i];
-        }
-        delete[] _tree;
     }
 
-    int **_tree;
-    int _size;
-    std::vector<int> _roots;
     std::vector<std::shared_ptr<lex_unit_ceten>> _lexicon;
 };
 
+static std::set<std::wstring> WORD_TAGS = { L"N", L"PROP", L"SPEC", L"DET", L"PERS", L"ADJ", L"ADV", L"V", L"NUM", L"PRON", 
+                                            L"PRP", L"KS", L"KC", L"IN", L"EC" };
+static std::set<std::wstring> SECUNDARY_INFO = { L"<artd>", L"<arti>", L"<quant>", L"<dem>", L"<poss>", L"<refl>", L"<diff>", L"<ident>",
+    L"<rel>", L"<interr>" };
 class decoder
 {
 
@@ -85,128 +71,82 @@ class decoder
         return ret;
     }
 
-    enum class STATE_MACHINE
+    void tokenize(std::wstring const &str, const std::wstring &delim, std::vector<std::wstring> &out)
     {
-        VERBETE,
-        CANONICAL,
-        SECUNDARY_INFO,
-        CATEGORY,
-        MORPHOLOGY,
-        SYNTATIC_FUNCTION,
-        TREE,
-        UNKOWN
-    };
-
-    void next_stage(STATE_MACHINE &current_stage, const std::wstring &line, int pos)
-    {
-        if (line[pos] == L'[')
-            current_stage = STATE_MACHINE::CANONICAL;
-        else if (line[pos] == L'<')
-            current_stage = STATE_MACHINE::SECUNDARY_INFO;
-        else if (line[pos] == L'@')
-            current_stage = STATE_MACHINE::SYNTATIC_FUNCTION;
-        else if (line[pos] == L'#')
-            current_stage = STATE_MACHINE::TREE;
-        else if (std::iswupper(line[pos]))
+        std::wstring tmp = str;
+        size_t pos = 0;
+        while ((pos = tmp.find_first_of(L" \t")) != std::wstring::npos)
         {
-            if (current_stage == STATE_MACHINE::CATEGORY)
+            auto token = tmp.substr(0, pos);
+            if(token.size() == 0)
             {
-                current_stage = STATE_MACHINE::MORPHOLOGY;
+                tmp.erase(0, pos + delim.length());
+                continue;
             }
-            else
+
+
+           // std::transform(token.begin(), token.end(), token.begin(), std::towupper);
+            out.emplace_back(token);
+            tmp.erase(0, pos + delim.length());
+        }
+        if(tmp.size() > 0)
+        {
+            out.emplace_back(tmp);
+        }
+    }
+
+
+    std::shared_ptr<lex_unit_ceten> parser_line(std::wstring line)
+    {
+        auto ret = std::make_shared<lex_unit_ceten>();
+
+        std::vector<std::wstring> tokens;
+        tokenize(line, L" ", tokens);
+        size_t tot = tokens.size();
+        if (tokens.size() > 0 && tokens[tokens.size() - 1][0] == L'#')
+        {
+            if(tokens[0][0] == L'$') {
+                ret->category = L"$";
+                return ret;
+            }
+
+            ret->verbete = tokens[0];
+            if(tokens[0].empty() || tokens[0] == L"")
             {
-                current_stage = STATE_MACHINE::CATEGORY;
+                std::cout << "" << std::endl;
+            }
+
+            auto lemmaPos = 0;
+            while(lemmaPos < tokens[1].size()  && (tokens[1][lemmaPos] == L' ' || tokens[1][lemmaPos] == L'\t'))
+            {
+                ++lemmaPos;
+            }
+            if(lemmaPos < tokens[1].size())
+            {
+                ret->lemma = tokens[1].substr(lemmaPos);
+            }
+
+            for(int i = 2; i < tokens.size(); ++i)
+            {
+                if(SECUNDARY_INFO.find(tokens[i]) != SECUNDARY_INFO.end())
+                {
+                    ret->secundary_information.emplace_back(tokens[i]);
+                    continue;
+                }
+
+                if(WORD_TAGS.find(tokens[i]) != WORD_TAGS.end())
+                {
+                    ret->category = tokens[i];
+                }
+            }
+            if (ret->category == L"")
+            {
+                return nullptr;
             }
         }
         else
         {
-            current_stage = STATE_MACHINE::UNKOWN;
-        }
-    }
-    std::shared_ptr<lex_unit_ceten> parser_line(std::wstring line)
-    {
-        int pos = 0;
-        auto ret = std::make_shared<lex_unit_ceten>();
-        bool category = false;
-        bool morphology_inflexion = false;
-
-        STATE_MACHINE state = STATE_MACHINE::VERBETE;
-
-        while (pos < line.size())
-        {
-            switch (state)
-            {
-            case STATE_MACHINE::VERBETE: {
-                auto tmp = line.npos;
-                if (pos == 0)
-                    tmp = line.find_first_of(L'\t', pos);
-                if (tmp == line.npos)
-                {
-                    break;
-                }
-                auto sub = line.substr(pos, tmp);
-                ret->verbete = sub;
-                pos += (tmp + 1);
-                next_stage(state, line, pos);
-                break;
-            }
-            case STATE_MACHINE::CANONICAL: {
-                auto tmp = line.npos;
-                tmp = line.find_first_of(L']', pos);
-                if (tmp == line.npos)
-                {
-                    break;
-                }
-                auto sub = line.substr(pos + 1, tmp - pos - 1);
-                pos += (tmp + 2);
-                next_stage(state, line, pos);
-                break;
-            }
-            case STATE_MACHINE::SECUNDARY_INFO: {
-                auto tmp = line.npos;
-                tmp = line.find_first_of(pos, L'>');
-
-                if (tmp != line.npos)
-                {
-                }
-                else if (tmp == line.npos)
-                {
-                    if (line.find_first_of(L"<DERS", pos) != line.npos ||
-                        line.find_first_of(L"<DERP", pos) != line.npos)
-                    {
-                        auto f = line.find_first_of(L'-', pos);
-                        auto s = line.find_first_of(L' ', f);
-                        auto sub = line.substr(pos, s - pos);
-                        ret->secundary_information.push_back(sub);
-                        pos += tmp + 1;
-                        next_stage(state, line, pos);
-                        break;
-                    }
-                }
-                break;
-            }
-            case STATE_MACHINE::CATEGORY: {
-                auto tmp = line.npos;
-                tmp = line.find_first_of(pos, L' ');
-                auto cat = line.substr(pos, tmp - pos);
-                if (!is_upper_case(cat))
-                    break;
-                ret->category = cat;
-                pos += tmp + 1;
-            }
-            case STATE_MACHINE::MORPHOLOGY: {
-                break;
-            }
-            case STATE_MACHINE::SYNTATIC_FUNCTION: {
-                break;
-            }
-            case STATE_MACHINE::TREE: {
-                break;
-            }
-            case STATE_MACHINE::UNKOWN: {
-                break;
-            }
-            }
+            return nullptr;
         }
 
         return ret;
@@ -214,12 +154,19 @@ class decoder
 
     std::shared_ptr<corpus_unit> foreach_line(const std::vector<std::wstring> &lines)
     {
-        auto ret = std::make_shared<corpus_unit>(lines.size());
+        auto ret = std::make_shared<corpus_unit>();
         for (const auto &line : lines)
         {
-            if (line.size() == 0)
+            auto res = parser_line(line);
+            if(res == nullptr)
+            {
+                return nullptr;
+            }
+            if(res->category == L"$")
+            {
                 continue;
-            ret->add_lex_unit_ceten(parser_line(line));
+            }
+            ret->add_lex_unit_ceten(res);
         }
         return ret;
     }
@@ -230,7 +177,9 @@ class decoder
         _fstream.open(path);
         std::locale utf8{"en_US.UTF-8"};
         _fstream.imbue(utf8);
-        return _fstream.is_open() && _fstream.good();
+        _debug.open("debug.txt");
+        _debug.imbue(utf8);
+        return _fstream.is_open() && _fstream.good() && _debug.is_open() && _debug.good();
     };
 
     bool parser_file()
@@ -240,32 +189,38 @@ class decoder
         std::wstring line;
         bool start = false;
         std::vector<std::wstring> lines;
-        while (ret && std::getline(_fstream, line))
+        int next_line = 1;
+        std::wstring token_id = L"<ext id=";
+        int tot = 10000;
+        while (tot >= 0 && ret && std::getline(_fstream, line))
         {
-            if (line == L"<s>" || line == L"<s frag>" || line == L"<a>" || line == L"<t>" || line == L"<p>" ||
-                line == L"<caixa>" || line == L"<situacao>" || line == L"<li>" || line.find(L"<ext") != line.npos)
+        
+            if(line.find(L"#" + std::to_wstring(next_line))  != line.npos)
             {
-                // stack.push(line);
+                lines.emplace_back(line);
+                ++next_line;
                 continue;
             }
-
-            if (line == L"</s>" || line == L"</a>" || line == L"</t>" || line == L"</p>" || line == L"</caixa>" ||
-                line == L"</situacao>" || line == L"</li>" || line == L"</ext>")
-            {
-                //  stack.pop();
+            else {
+                next_line = 1;
                 if (lines.size() > 0)
                 {
                     auto corpus_u = foreach_line(lines);
-                    _corpus.push_back(corpus_u);
+                    if(corpus_u != nullptr)
+                        _corpus.push_back(corpus_u);
                     lines.clear();
+                    --tot;
                 }
-                continue;
             }
-            if (line.size() > 0)
-                lines.push_back(line);
         }
         return true;
     }
+
+
+    std::vector<std::shared_ptr<corpus_unit>> get_corpus()
+    {
+        return _corpus;
+    };
 
     ~decoder()
     {
@@ -277,6 +232,7 @@ class decoder
 
   private:
     std::wifstream _fstream;
+    std::wofstream _debug;
     std::vector<std::shared_ptr<corpus_unit>> _corpus;
 };
 }; // namespace visl_cg

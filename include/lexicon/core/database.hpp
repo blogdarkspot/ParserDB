@@ -55,10 +55,12 @@ template <typename _Key> class database
         {
             _word_desc.emplace_back(lex->entry);
             new_value->entry = _word_desc.size() - 1;
+            new_value->total = std::make_shared<size_t>(0);
         }
         else
         {
             new_value->entry = iWord->second[0]->entry;
+            new_value->total = iWord->second[0]->total;
         }
 
         if (iCanonical == _library_by_canonical.end())

@@ -34,9 +34,10 @@
             "type": "lldb",
             "request": "launch",
             "name": "Unit Test",
-            "program": "${workspaceFolder}/build/src/grammar/main",
+            "program": "${workspaceFolder}/build/tests/grammar_test",
             "args": [],
-            "cwd": "${workspaceFolder}/data"
+            "cwd": "${workspaceFolder}/data",
+            "console": "integratedTerminal"
         },
         {
             "type": "lldb",

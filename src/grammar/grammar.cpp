@@ -1,4 +1,5 @@
 #include "constituency.hpp"
+#include "core/tokens.hpp"
 #include "rules.hpp"
 #include "pcfg.hpp"
 #include "cky.hpp"
@@ -6,7 +7,9 @@
 #include "input_rules.hpp"
 #include "utils/matrix.hpp"
 #include "lexicon/lexicon.h"
+#include "lexicon/ceten_folha/ceten_folha.hpp"
 
+#include <cwctype>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -151,8 +154,114 @@ class grammar
 
 };
 
+
+void ceten_parser()
+{
+
+    auto g = grammar::grammar();
+    g.delaf_path_file("delaf_linux.dic");
+    g.delaf_constractions_file("contracoes.cont");
+    
+    auto ret = g.load_delaf();
+    std::locale utf8{"en_US.UTF-8"};
+    std::wofstream _debug("debug_words.txt");
+    std::wofstream _debug_class("debug_class.txt");
+    _debug.imbue(utf8);
+    _debug_class.imbue(utf8);
+
+    corpus::folha::decoder decoder;
+    decoder.load_file("CETENFolha-1.0_jan2014.cg");
+    std::set<std::wstring> checked_classes;
+    if(decoder.parser_file())
+    {
+        auto corpus = decoder.get_corpus();
+
+        for(auto& corpus_u : corpus)
+        {
+            for(auto& lex : corpus_u->_lexicon)
+            {
+
+                std::wstring original_class;
+                std::transform(lex->verbete.begin(), lex->verbete.end(), lex->verbete.begin(), std::towlower);
+                auto lexicons = g.get_word_info(lex->verbete);
+                original_class = lex->category;
+                if (lexicons.size() == 0)
+                {
+                    _debug << L"verbete: " << lex->verbete << L" class: " << lex->category << std::endl;
+                    continue;
+                }else
+                if (lex->category == L"PRP")
+                {
+                    lex->category = L"PREP";
+                }else
+                if (lex->category == L"PROP")
+                {
+                    lex->category = L"N";
+                }else
+                if (lex->category == L"ADJ")
+                {
+                    lex->category = L"A";
+                }else
+                if (lex->category == L"KS")
+                {
+                    lex->category = L"CONJ";
+                }else
+                if (lex->category == L"KC")
+                {
+                    lex->category = L"CONJ";
+                }else
+                if (lex->category == L"IN")
+                {
+                    lex->category = L"INTERJ";
+                }else
+                if (lex->category == L"EC")
+                {
+                    lex->category = L"PFX";
+                }else
+                if (lex->category == L"SPEC" || lex->category == L"PERS")
+                {
+                    lex->category = L"PRO";
+                }else
+                if (lex->category == L"DET")
+                {
+                    for (auto sec : lex->secundary_information)
+                    {
+                        if (sec == L"<artd>" || sec == L"<arti>")
+                        {
+                            lex->category = L"ART";
+                            break;
+                        }
+                        if (sec == L"<quant>" || sec == L"<dem>" || sec == L"<poss>" || sec == L"<refl>" ||
+                            sec == L"<rel>" || sec == L"<interr>")
+                        {
+                            lex->category = L"PRO";
+                        }
+                    }
+                }else {
+                }
+                bool find_one = false;
+                for(auto& lex1 : lexicons)
+                {
+                    if(lex->category == *(lex1->category->categoria))
+                    {
+                        ++lex1->calls;
+                        find_one = true;
+                        continue;
+                    }
+                }
+                if(!find_one)
+                {
+                    _debug_class << L"word: " << lex->verbete << L" " << L" original class: " << original_class << L" new class: "  << lex->category << std::endl;
+                }
+                *lexicons[0]->total += 1;
+            }
+        }
+    }
+}
 int main()
 {
+    ceten_parser();
+    /*
     auto g = grammar::grammar();
     g.add_rule(L"S -> NP VP");
     g.add_rule(L"S -> VP NP");
@@ -252,5 +361,6 @@ int main()
     g.add_terminal(L"PRO", L"aquele");
     g.add_terminal(L"N", L"computador");
 //    std::wcout << g.rules_info() << std::endl;
+*/
     return 0;
 }
