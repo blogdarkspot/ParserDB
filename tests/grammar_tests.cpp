@@ -155,6 +155,9 @@ TEST(Grammar, NPRules)
     _pcfg->set_terminals(add_terminal(L"ADV", L"c"));
     _pcfg->set_terminals(add_terminal(L"PREP", L"p"));
     _pcfg->set_start_symbol(L"NP");
+
+    std::wcout << *_pcfg << std::endl;
+
     _cky->set_cfg(_pcfg);
     {
         std::vector<std::wstring> tokens = {L"n"};

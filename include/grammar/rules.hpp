@@ -2,6 +2,7 @@
 #define __RULES__
 #include <memory>
 #include <ostream>
+#include <map>
 
 namespace grammar::cfg
 {
@@ -76,12 +77,13 @@ class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
     bool _is_terminal;
 };
 
+
 template <class _StringT, template <class...> class _ContainerT>
 struct ProbabilisticRule : public rule<_StringT, _ContainerT>
 {
-    unsigned int total = 0;
-    unsigned int times = 0;
 
+    double P = 0.0;
+    std::shared_ptr<size_t> tot_rules_same_left_side = nullptr;
     ProbabilisticRule(_StringT left, _ContainerT<_StringT> right, bool is_terminal)
         : rule<_StringT, _ContainerT>(left, right, is_terminal)
     {
@@ -89,7 +91,12 @@ struct ProbabilisticRule : public rule<_StringT, _ContainerT>
 
     friend std::wostream &operator<<(std::wostream &os, const ProbabilisticRule &r)
     {
-        os << static_cast<rule<_StringT, _ContainerT>>(r);
+        size_t tot = 0;
+        if(r.tot_rules_same_left_side != nullptr)
+        {
+            tot = *(r.tot_rules_same_left_side);
+        }
+        os << L"total: " << tot << static_cast<rule<_StringT, _ContainerT>>(r);
         return os;
     }
 };

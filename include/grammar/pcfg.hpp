@@ -49,14 +49,19 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
         else
         {
             auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule);
-            _rules[rule->get_left_side()].emplace_back(tmp);
 
             auto it = _rules.find(rule->get_left_side());
-
-            for (auto i = 0; i < it->second.size(); ++i)
+            if(it != _rules.end())
             {
-                it->second[i]->total = it->second.size();
+                tmp->tot_rules_same_left_side = it->second[0]->tot_rules_same_left_side;
             }
+            else {
+                tmp->tot_rules_same_left_side = std::make_shared<size_t>(0);
+            }
+
+            *(tmp->tot_rules_same_left_side) += 1;
+
+            _rules[rule->get_left_side()].emplace_back(tmp);
         }
     }
 
