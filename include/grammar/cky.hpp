@@ -6,6 +6,7 @@
 #include "constituency.hpp"
 #include <vector>
 #include <iostream>
+#include <limits>
 
 namespace grammar::parser
 {
@@ -30,7 +31,52 @@ public:
         return _get_trees(encoded);
     }
 
+    virtual std::shared_ptr<::grammar::cfg::symbol<_StringType>> get_best_tree(std::vector<_StringType> tokens) override
+    {
+        auto encoded = encode(tokens);
+        auto trees = _get_trees(encoded);
+        return _get_best_tree(trees);
+
+    }
+
 private:
+
+    std::shared_ptr<::grammar::cfg::symbol<_StringType>> _get_best_tree (tree_list trees)
+    {
+        std::shared_ptr<::grammar::cfg::symbol<_StringType>> ret;
+        double best_probability = std::numeric_limits<double>::min();
+
+        for(const auto& tree : trees)
+        {
+            double probability = std::numeric_limits<double>::min();
+            compute_probability(tree, probability);
+            if(probability > best_probability)
+            {
+                ret = tree;
+                best_probability = probability;
+            }
+        }
+
+        return ret;
+    }
+
+    void compute_probability(std::shared_ptr<::grammar::cfg::symbol<_StringType>> node, double &p)
+    {
+        if(node == nullptr) return;
+
+        if(p == std::numeric_limits<double>::min())
+        {
+            p = node->probability;
+        }
+        else
+        {
+            p *= node->probability;
+        }
+
+        compute_probability(node->left, p);
+        compute_probability(node->right, p);
+    }
+
     tree_list _get_trees(utils::colections::matrix<symbol_list>& m)
     {
         tree_list ret;
@@ -83,6 +129,7 @@ private:
                                  new_value->value = rule->get_left_side();
                                  new_value->left = value;
                                  new_value->right = value2;
+                                 new_value->probability = rule->get_probability();
                                  ret[i][j].emplace_back(new_value);
                             }
                         }

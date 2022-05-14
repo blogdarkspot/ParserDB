@@ -31,6 +31,7 @@ class iparser
     public:
     virtual void set_cfg(std::shared_ptr<::grammar::cfg::icfg<_StringType>>) = 0;
     virtual std::vector<std::shared_ptr<::grammar::cfg::symbol<_StringType>>> get_trees(std::vector<_StringType>) = 0;
+    virtual std::shared_ptr<::grammar::cfg::symbol<_StringType>> get_best_tree(std::vector<_StringType>) = 0;
 };
 }
 #endif

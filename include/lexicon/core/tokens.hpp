@@ -6,6 +6,7 @@
 #include <cwctype>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace lexicon
 {

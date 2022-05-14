@@ -23,8 +23,19 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
 
     virtual void set_terminals(typename cfg::icfg<_Ky>::rule_ptr terminal) override
     {
-            _terminals[terminal->get_right_side()[0]].emplace_back(
-                std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(terminal));
+
+            auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(terminal);
+            auto it = _terminals.find(tmp->get_right_side()[0]);
+
+            if(it != _terminals.end())
+            {
+                tmp->set_count_lhs(it->second[0]->get_count_lhs());
+            }
+            else {
+                tmp->set_count_lhs(std::make_shared<size_t>(0));
+            }
+
+            _terminals[terminal->get_right_side()[0]].emplace_back(tmp);
     }
 
     void clear_rules()
@@ -41,25 +52,35 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
     virtual void set_rules(typename cfg::icfg<_Ky>::rule_ptr rule) override
     {
     
+        auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule);
+
         if (rule->get_right_side().size() == 1)
         {
-            _rules_terminal[rule->get_left_side()].emplace_back(
-                std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule));
+            auto it = _rules_terminal.find(rule->get_left_side());
+
+            if(it != _rules_terminal.end())
+            {
+                tmp->set_count_lhs(it->second[0]->get_count_lhs());
+            }
+            else {
+                tmp->set_count_lhs(std::make_shared<size_t>(0));
+            }
+
+            _rules_terminal[rule->get_left_side()].emplace_back(tmp);
+                
         }
         else
         {
-            auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule);
 
             auto it = _rules.find(rule->get_left_side());
+
             if(it != _rules.end())
             {
-                tmp->tot_rules_same_left_side = it->second[0]->tot_rules_same_left_side;
+                tmp->set_count_lhs(it->second[0]->get_count_lhs());
             }
             else {
-                tmp->tot_rules_same_left_side = std::make_shared<size_t>(0);
+                tmp->set_count_lhs(std::make_shared<size_t>(0));
             }
-
-            *(tmp->tot_rules_same_left_side) += 1;
 
             _rules[rule->get_left_side()].emplace_back(tmp);
         }

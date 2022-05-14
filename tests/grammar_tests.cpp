@@ -156,8 +156,6 @@ TEST(Grammar, NPRules)
     _pcfg->set_terminals(add_terminal(L"PREP", L"p"));
     _pcfg->set_start_symbol(L"NP");
 
-    std::wcout << *_pcfg << std::endl;
-
     _cky->set_cfg(_pcfg);
     {
         std::vector<std::wstring> tokens = {L"n"};
@@ -173,14 +171,20 @@ TEST(Grammar, NPRules)
         std::vector<std::wstring> tokens = {L"a", L"n"};
         auto trees = _cky->get_trees(tokens);
         EXPECT_EQ(trees.size(), 1);
-        printBT(trees[0]);
     }
     {
         std::vector<std::wstring> tokens = {L"c", L"a", L"n"};
         auto trees = _cky->get_trees(tokens);
         EXPECT_EQ(trees.size(), 1);
-        printBT(trees[0]);
     }
+
+    {
+        std::vector<std::wstring> tokens = {L"c", L"a", L"n"};
+        auto tree = _cky->get_best_tree(tokens);
+        printBT(tree);
+    }
+
+    std::wcout << *_pcfg << std::endl;
 
 }
 
@@ -240,7 +244,7 @@ void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::sym
 
         bool is_terminal = node->is_terminal;
         // print the value of the node
-        std::wcout << node->value <<  (is_terminal ? L"──" : L"\n");
+        std::wcout << L" p: " << node->probability << L" " << node->value <<  (is_terminal ? L"──" : L"\n");
 
         if(is_terminal)
         {

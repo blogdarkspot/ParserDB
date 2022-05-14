@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
+#include <rules.hpp>
 
 namespace grammar::cfg
 {
@@ -10,6 +12,7 @@ namespace grammar::cfg
 template<typename _StringType>
 struct symbol
 {
+    using rule_ptr = std::shared_ptr<cfg::ProbabilisticRule<_StringType, std::vector>>;
     _StringType value;
     double probability;
     bool is_terminal;
