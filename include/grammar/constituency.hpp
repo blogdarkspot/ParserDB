@@ -9,34 +9,60 @@
 namespace grammar::cfg
 {
 
-template<typename _StringType>
 struct symbol
 {
-    using rule_ptr = std::shared_ptr<cfg::ProbabilisticRule<_StringType, std::vector>>;
-    _StringType value;
+    std::wstring value;
     double probability;
     bool is_terminal;
-    std::shared_ptr<symbol<_StringType>> left = nullptr;
-    std::shared_ptr<symbol<_StringType>> right = nullptr;
+    std::shared_ptr<symbol> left = nullptr;
+    std::shared_ptr<symbol> right = nullptr;
 };
 
-template<typename _StringType>
-struct lexicon : symbol<_StringType>
+struct symbols
 {
-    _StringType lex;
-};
+    std::wstring value;
 
-template<typename _StringType>
-struct constituency : public symbol<_StringType>
-{
-    void set_left(std::shared_ptr<constituency<_StringType>> l)
+    void set_left(std::shared_ptr<symbol> left)
     {
-        symbol<_StringType>::left = l;
+        for(auto rule : _rules)
+        {
+            rule->left = left;
+        }
     }
 
-    void set_right(std::shared_ptr<constituency<_StringType>> r)
+    void set_right(std::shared_ptr<symbol> right)
     {
-        symbol<_StringType>::right = r;
+        for(auto rule : _rules)
+        {
+            rule->right = right;
+        }
+    }
+
+    symbols& operator+=(std::shared_ptr<symbol> rhs)
+    {
+        _rules.emplace_back(rhs);
+        return *this;
+    }
+
+    private:
+    std::vector<std::shared_ptr<symbol>> _rules;
+};
+
+struct lexicon : symbol
+{
+    std::wstring lex;
+};
+
+struct constituency : public symbol
+{
+    void set_left(std::shared_ptr<constituency> l)
+    {
+        symbol::left = l;
+    }
+
+    void set_right(std::shared_ptr<constituency> r)
+    {
+        symbol::right = r;
     }
 };
 };

@@ -6,3 +6,5 @@ compile_commands.json
 delaf_linux.dic
 *.cg
 *.so
+data/*.xml
+*.xml

@@ -18,7 +18,7 @@
 
 
 
-void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::symbol<std::wstring>> node, bool isLeft)
+void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::symbol> node, bool isLeft)
 {
     if( node != nullptr )
     {
@@ -32,7 +32,7 @@ void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::sym
 
         if(is_terminal)
         {
-            std::wcout << (std::static_pointer_cast<grammar::cfg::lexicon<std::wstring>>(node))->lex << std::endl;
+            std::wcout << (std::static_pointer_cast<grammar::cfg::lexicon>(node))->lex << std::endl;
         }
         // enter the next tree level - left and right branch
         printBT( prefix + (isLeft ? L"│   " : L"    "), node->left, true);
@@ -40,7 +40,7 @@ void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::sym
     }
 }
 
-void printBT(const std::shared_ptr<grammar::cfg::symbol<std::wstring>> node)
+void printBT(const std::shared_ptr<grammar::cfg::symbol> node)
 {
     printBT(L"", node, false);    
 }
@@ -71,7 +71,7 @@ struct Contraction
     std::wstring suffix_class;
 };
 
-int build_tree(const std::shared_ptr<grammar::cfg::symbol<std::wstring>> node, std::vector<TreeNote>& result)
+int build_tree(const std::shared_ptr<grammar::cfg::symbol> node, std::vector<TreeNote>& result)
 {
     int ret = -1;
     if(node != nullptr)
@@ -80,7 +80,7 @@ int build_tree(const std::shared_ptr<grammar::cfg::symbol<std::wstring>> node, s
         value.value = node->value;
         if(node->is_terminal)
         {
-            value.terminal = (std::static_pointer_cast<grammar::cfg::lexicon<std::wstring>>(node))->lex;
+            value.terminal = (std::static_pointer_cast<grammar::cfg::lexicon>(node))->lex;
         }
         result.emplace_back(value);
         int pos = result.size() - 1;
@@ -95,8 +95,8 @@ class grammar
 {
   public:
 
-    grammar() : _pcfg(new cfg::PCFG<std::wstring, std::vector>()),
-    _cky(new parser::cky<std::wstring>()),
+    grammar() : _pcfg(new cfg::PCFG()),
+    _cky(new parser::cky()),
     _lexicon(new lexicon::lexicon())
 
     {
@@ -131,7 +131,7 @@ class grammar
     {
         std::vector<std::wstring> _right;
         _right.emplace_back(right);
-        auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule<std::wstring, std::vector>>(left, _right, true);
+        auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule>(left, _right, true);
         _pcfg->set_terminals(terminal);
     }
 
@@ -236,8 +236,8 @@ class grammar
     }
 
   private:
-    std::shared_ptr<cfg::PCFG<std::wstring, std::vector>> _pcfg;
-    std::shared_ptr<parser::iparser<std::wstring>> _cky;
+    std::shared_ptr<cfg::PCFG> _pcfg;
+    std::shared_ptr<parser::cky> _cky;
     std::shared_ptr<lexicon::lexicon> _lexicon;
 };
 

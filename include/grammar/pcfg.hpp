@@ -15,16 +15,16 @@
 namespace grammar::cfg
 {
 
-template <typename _Ky, template <class...> class _ContainerT> class PCFG : public icfg<_Ky>
+class PCFG 
 {
 
   public:
     PCFG() = default;
 
-    virtual void set_terminals(typename cfg::icfg<_Ky>::rule_ptr terminal) override
+    virtual void set_terminals(typename cfg::icfg::rule_ptr terminal)
     {
 
-            auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(terminal);
+            auto tmp = std::static_pointer_cast<ProbabilisticRule>(terminal);
             auto it = _terminals.find(tmp->get_right_side()[0]);
 
             if(it != _terminals.end())
@@ -49,10 +49,10 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
         _terminals.clear();
     }
 
-    virtual void set_rules(typename cfg::icfg<_Ky>::rule_ptr rule) override
+    virtual void set_rules(typename cfg::icfg::rule_ptr rule) 
     {
     
-        auto tmp = std::static_pointer_cast<ProbabilisticRule<_Ky, std::vector>>(rule);
+        auto tmp = std::static_pointer_cast<ProbabilisticRule>(rule);
 
         if (rule->get_right_side().size() == 1)
         {
@@ -86,24 +86,24 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
         }
     }
 
-    virtual void set_start_symbol(_Ky symbol) override
+    virtual void set_start_symbol(std::wstring symbol) 
     {
         _symbol = symbol;
     }
 
 
-    virtual _Ky get_start_symbol() override 
+    virtual std::wstring get_start_symbol() 
     {
         return _symbol;
     }
 
-    virtual std::vector<typename cfg::icfg<_Ky>::rule_ptr> get_lexicon(_Ky lex) override
+    virtual std::vector<cfg::icfg::rule_ptr> get_lexicon(std::wstring lex)
     {
-        std::vector<typename cfg::icfg<_Ky>::rule_ptr> ret = _terminals[lex];
+        std::vector<cfg::icfg::rule_ptr> ret = _terminals[lex];
         auto tmp = ret; 
         for(const auto i : tmp)
         {
-            _ContainerT<_Ky> grammarR; // = {value, value2};
+            std::vector<std::wstring> grammarR; // = {value, value2};
             grammarR.emplace_back(i->get_left_side());
             
             for (const auto &[key, rules] : _rules_terminal)
@@ -113,7 +113,7 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
                     
                     if(rule->is_valid(grammarR))
                     {
-                        auto tmp1 = std::make_shared<ProbabilisticRule<_Ky, std::vector>>(rule->get_left_side(), i->get_right_side(), true);
+                        auto tmp1 = std::make_shared<ProbabilisticRule>(rule->get_left_side(), i->get_right_side(), true);
                         ret.emplace_back(tmp1);
                     }
                 }
@@ -122,13 +122,13 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
         return ret;
     }
 
-    virtual std::vector<typename cfg::icfg<_Ky>::rule_ptr> get_match_rules(_Ky first, _Ky second) override
+    virtual std::vector<cfg::icfg::rule_ptr> get_match_rules(std::wstring first, std::wstring second)
     {
-        _ContainerT<_Ky> grammarR; // = {value, value2};
+        std::vector<std::wstring> grammarR; // = {value, value2};
         grammarR.emplace_back(first);
         grammarR.emplace_back(second);
 
-        std::vector<typename cfg::icfg<_Ky>::rule_ptr> ret;
+        std::vector<cfg::icfg::rule_ptr> ret;
 
         for (const auto &[key, rules] : _rules)
         {
@@ -144,13 +144,13 @@ template <typename _Ky, template <class...> class _ContainerT> class PCFG : publ
     }
 
   private:
-    std::map<_Ky, std::vector<std::shared_ptr<ProbabilisticRule<_Ky, std::vector>>>> _rules;
-    std::map<_Ky, std::vector<std::shared_ptr<ProbabilisticRule<_Ky, std::vector>>>> _rules_terminal;
-    std::map<_Ky, std::vector<std::shared_ptr<ProbabilisticRule<_Ky, std::vector>>>> _terminals;
-    _Ky _symbol;
+    std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> _rules;
+    std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> _rules_terminal;
+    std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> _terminals;
+    std::wstring _symbol;
 
   public:
-    friend std::wostream &operator<<(std::wostream &os, const PCFG<_Ky, _ContainerT> &r)
+    friend std::wostream &operator<<(std::wostream &os, const PCFG &r)
     {
         for (const auto &[key, value] : r._rules)
         {

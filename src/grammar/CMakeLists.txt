@@ -20,7 +20,7 @@ target_compile_features(${PYTHON_MODULE_NAME} PUBLIC cxx_std_20)
 target_link_libraries(${PYTHON_MODULE_NAME} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} gramatico::lexicon)
 
 add_executable(main grammar.cpp)
-target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/include/grammar ${CMAKE_SOURCE_DIR}/include )
+target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/include/grammar ${CMAKE_SOURCE_DIR}/include ${Boost_INCLUDE_DIR} )
 target_compile_features(main PUBLIC cxx_std_20)
 target_link_libraries(main gramatico::lexicon)
 

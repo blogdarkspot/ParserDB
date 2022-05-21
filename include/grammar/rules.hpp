@@ -4,36 +4,38 @@
 #include <ostream>
 #include <map>
 #include <assert.h>
+#include <vector>
+#include <string>
 
 namespace grammar::cfg
 {
 
-template <class _Ty, template <class...> class ContainerT>
-class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
+class rule : public std::enable_shared_from_this<rule>
 {
   public:
-    using rule_sptr = std::shared_ptr<rule<_Ty, ContainerT>>;
+    using rule_sptr = std::shared_ptr<rule>;
 
-    rule(_Ty left, ContainerT<_Ty> right, bool is_terminal)
+    rule(std::wstring left, std::vector<std::wstring> right, bool is_terminal)
         : _left_side(left), _right_side(right), _is_terminal(is_terminal)
     {
     }
 
-    std::shared_ptr<rule<_Ty, ContainerT>> get_ptr()
+    std::shared_ptr<rule> get_ptr()
     {
         return this->shared_from_this();
     }
 
-    rule(ContainerT<_Ty> right)
+    rule(std::vector<std::wstring> right)
     {
     }
 
-    _Ty get_left_side()
+    std::wstring get_left_side()
     {
         return _left_side;
     }
 
-    ContainerT<_Ty> get_right_side()
+    std::vector<std::wstring> get_right_side()
+    
     {
         return _right_side;
     }
@@ -43,7 +45,7 @@ class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
         return _is_terminal;
     }
 
-    bool is_valid(ContainerT<_Ty> right)
+    bool is_valid(std::vector<std::wstring> right)
     {
         bool ret = true;
         for (int i = 0; i < right.size(); ++i)
@@ -60,7 +62,7 @@ class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
     {
     }
 
-    friend std::wostream &operator<<(std::wostream &os, const rule<_Ty, ContainerT> &r)
+    friend std::wostream &operator<<(std::wostream &os, const rule &r)
     {
         os << r._left_side << " -> ";
         unsigned int i = 0;
@@ -72,27 +74,26 @@ class rule : public std::enable_shared_from_this<rule<_Ty, ContainerT>>
     }
 
   private:
-    _Ty _left_side;
-    ContainerT<_Ty> _right_side;
+    std::wstring _left_side;
+    std::vector<std::wstring> _right_side;
     int _role_size;
     bool _is_terminal;
 };
 
 
-template <class _StringT, template <class...> class _ContainerT>
-struct ProbabilisticRule : public rule<_StringT, _ContainerT>
+struct ProbabilisticRule : public rule
 {
 
 
-    ProbabilisticRule(_StringT left, _ContainerT<_StringT> right, bool is_terminal)
-        : rule<_StringT, _ContainerT>(left, right, is_terminal)
+    ProbabilisticRule(std::wstring left, std::vector<std::wstring> right, bool is_terminal)
+        : rule(left, right, is_terminal)
     {
     }
 
     friend std::wostream &operator<<(std::wostream &os, const ProbabilisticRule &r)
     {
         auto p = r.get_probability();
-        os << L"probability : " << p << L" " << static_cast<rule<_StringT, _ContainerT>>(r);
+        os << L"probability : " << p << L" " << (rule)(r);
         return os;
     }
 

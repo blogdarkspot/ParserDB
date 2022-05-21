@@ -9,7 +9,7 @@
 namespace grammar::cfg
 {
 
-using container_rules_utf8 = std::vector<std::shared_ptr<rule<std::wstring, std::vector>>>;
+using container_rules_utf8 = std::vector<std::shared_ptr<rule>>;
 
 class file
 {
@@ -18,7 +18,7 @@ class file
 
     // A -> B C "description"
 
-    std::shared_ptr<ProbabilisticRule<std::wstring, std::vector>> parser(const std::wstring &rule)
+    std::shared_ptr<ProbabilisticRule> parser(const std::wstring &rule)
     {
         return _parser(rule);
     }
@@ -44,7 +44,7 @@ class file
     }
 
   private:
-    std::shared_ptr<grammar::cfg::ProbabilisticRule<std::wstring, std::vector>> _parser(const std::wstring &rule)
+    std::shared_ptr<grammar::cfg::ProbabilisticRule> _parser(const std::wstring &rule)
     {
         auto pos = rule.find_first_of(L"-");
 
@@ -80,7 +80,7 @@ class file
             }
         } while (true);
 
-        return std::make_shared<::grammar::cfg::ProbabilisticRule<std::wstring, std::vector>>(left, right, false);
+        return std::make_shared<::grammar::cfg::ProbabilisticRule>(left, right, false);
     }
 };
 }; // namespace grammar::cfg

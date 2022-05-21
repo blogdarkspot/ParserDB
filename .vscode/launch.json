@@ -31,22 +31,14 @@
             "justMyCode": true
         },
         {
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "name": "Unit Test",
             "program": "${workspaceFolder}/build/tests/grammar_test",
             "args": [],
             "cwd": "${workspaceFolder}/data",
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                "description": "Enable pretty-printing for gdb",
-                "text": "-enable-pretty-printing",
-                "ignoreFailures": true
-                }
-            ],
-            "miDebuggerPath": "/usr/bin/gdb"
+            "console": "integratedTerminal"
+            
         },
         {
             "type": "lldb",
