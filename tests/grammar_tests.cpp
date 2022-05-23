@@ -333,8 +333,6 @@ TEST_F(PCFGTest, NPRules)
 
 }
 
-
-
 std::shared_ptr<grammar::cfg::ProbabilisticRule> add_terminal(std::wstring left, std::wstring right)
 {
     std::vector<std::wstring> _right;

@@ -5,16 +5,65 @@
 <div class="container">
 
   <div class="row">
-    <form method="post">
+      <form method="post">
         <label for="inputSentence">Input Sentence</label>
         <div class="input-group">
         <input type="text" name="text" class="form-control" id="inputSentence" aria-describedby="emailHelp" placeholder="ex: aquele computador">
-        <span class="input-group-btn">
-          <button type="submit" name="submit_button" value="check" class="btn btn-primary">Submit</button>
-        </span>
+          <span class="input-group-btn">
+           <button type="submit" name="submit_button" value="check" class="btn btn-primary"><span class="bi-search"></span>Submit</button>
+          </span>
+        </div>
+      </form>
+<!-- Button trigger modal -->
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+          <span class="bi-gear-fill" aria-hidden="true"></span> 
+      </button> 
+
+      <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Configurações</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <form method="post" action="/config" id="files" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="DelafPath">Delaf File Path:</label>
+              <input type="file" name="file_delaf" class="form-control-file" id="DelafPath">
+            </div>
+            <div class="form-group">
+              <label for="Contracoes">Contrações Path:</label>
+              <input type="file" name="file_contracoes" class="form-control-file" id="Contracoes">
+            </div>
+
+            <div class="form-group">
+              <label for="Gramatica">Gramática Path:</label>
+              <input type="file" name="file_gramatica" class="form-control-file" id="Gramatica">
+            </div>
+            <div class="form-group">
+              <input type="text" name="start_symbol" class="form-control" id="exampleInputPassword1" placeholder="Start Symbol">
+            </div>
+          </form>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button onclick="form_submit()" id="save_btn" type="submit" name="submit_button" value="load_config" class="btn btn-primary">Save changes</button>
+            <script type="text/javascript">
+              function form_submit() {
+                document.getElementById("files").submit();
+              }    
+            </script>
+          </div>
+        </div>
       </div>
-    </form>
-  </div>
+    </div>
+    </div>
 <div class="row">
   <div id="carouselExampleControls" class="carousel slide" data-interval="false" data-ride="carousel">
 
@@ -44,33 +93,6 @@
 
   <div class="row">
     <div class="row align-items-center">
-      <div class="col align-self-start">
-          <h4>Configurações</h4>
-        <div class="container border">
-          <form method="post" enctype="multipart/form-data">
-            <div class="form-group">
-              <label for="DelafPath">Delaf File Path:</label>
-              <input type="file" name="file_delaf" class="form-control-file" id="DelafPath">
-            </div>
-            <div class="form-group">
-              <label for="Contracoes">Contrações Path:</label>
-              <input type="file" name="file_contracoes" class="form-control-file" id="Contracoes">
-            </div>
-
-            <div class="form-group">
-              <label for="Gramatica">Gramática Path:</label>
-              <input type="file" name="file_gramatica" class="form-control-file" id="Gramatica">
-            </div>
-
-            <div class="form-group">
-              <button type="submit" name="submit_button" value="paths" class="btn btn-primary">Load Files</button>
-            </div>
-            <div class="form-group">
-              <button type="submit" name="submit_button" value="lexicon" class="btn btn-primary">Load Lexicon</button>
-            </div>
-          </form>
-        </div>
-      </div>
       <div class="col align-self-start">
         <div class = "container">
           <h4>Léxico Status:</h4>

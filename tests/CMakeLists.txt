@@ -20,6 +20,7 @@ endmacro()
 
 #package_add_test_with_libraries(utils_test colections_test.cpp template::sample "${DATA_PATH}")
 package_add_test_with_libraries(grammar_test grammar_tests.cpp gramatico::grammar "${DATA_PATH}")
+package_add_test_with_libraries(input_rules_test input_rules_test.cpp gramatico::grammar "${DATA_PATH}")
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     include(CodeCoverage)

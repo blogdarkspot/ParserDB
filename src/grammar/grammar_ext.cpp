@@ -100,7 +100,6 @@ class grammar
     _lexicon(new lexicon::lexicon())
 
     {
-        _pcfg->set_start_symbol(L"DP");
         _cky->set_cfg(_pcfg);
     }
 
@@ -176,6 +175,41 @@ class grammar
         _lexicon->set_contractions_path(path);
     }
 
+
+    void cnf_path(std::string path)
+    {
+        _cnf_path = path;
+    }
+    
+    bool load_cnf()
+    {
+        auto ret = true;
+        ::grammar::cfg::file file;
+        file.set_path(_cnf_path);
+        ret = file.open();
+        if(ret)
+        {
+            auto rules = file.get_all();
+            if(rules.size() == 0)
+            {
+                ret = false;
+            }
+            else {
+                for(auto rule : rules)
+                {
+                    if(rule != nullptr)
+                        _pcfg->set_rules(rule);
+                }
+            }
+        }
+        return ret;
+    }
+
+    void set_start_symbol(std::wstring symbol)
+    {
+        _pcfg->set_start_symbol(symbol);
+    }
+
     bool load_delaf()
     {
         return _lexicon->load();
@@ -239,6 +273,7 @@ class grammar
     std::shared_ptr<cfg::PCFG> _pcfg;
     std::shared_ptr<parser::cky> _cky;
     std::shared_ptr<lexicon::lexicon> _lexicon;
+    std::string _cnf_path;
 };
 
 
@@ -261,7 +296,10 @@ BOOST_PYTHON_MODULE(gramatico)
     .def("clear_terminals", &grammar::grammar::clear_terminals)
     .def("set_delaf_constractions_path", &grammar::grammar::delaf_constractions_file)
     .def("split_contraction", &grammar::grammar::split_contraction)
-    .def("delaf_info", &grammar::grammar::delaf_info);
+    .def("delaf_info", &grammar::grammar::delaf_info)
+    .def("load_cnf", &grammar::grammar::load_cnf)
+    .def("set_cnf", &grammar::grammar::cnf_path)
+    .def("set_start_symbol", &grammar::grammar::set_start_symbol);
 
   
   class_<grammar::LexiconEntry>("LexiconEntry")

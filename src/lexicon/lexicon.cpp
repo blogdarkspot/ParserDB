@@ -102,8 +102,8 @@ struct lexicon::_impl_lexicon
     std::shared_ptr<::lexicon::delas::DelasFile> _delas_file;
     std::shared_ptr<::lexicon::delas::ContractionsFile> _contractions;
     std::shared_ptr<::lexicon::database<std::wstring>> _db;
-    bool _is_delaf_loading;
-    bool _is_contractions_loading;
+    bool _is_delaf_loading = false;
+    bool _is_contractions_loading = false;
 };
 
 lexicon::lexicon() : _ptr(new _impl_lexicon())

@@ -98,37 +98,18 @@ struct ProbabilisticRule : public rule
     }
 
 
-    void increment_count()
+    void set_probability(double p)
     {
-        assert(tot_lhs != nullptr);
-        *tot_lhs += 1;
-        ++count;
+        probability = p;
     }
 
     const double get_probability() const
     {
-        if(*tot_lhs == 0)
-        {
-            return 1.0 / tot_lhs.use_count();
-        }
-
-        return  (count * 1.0) / *tot_lhs;
-    }
-
-    void set_count_lhs(std::shared_ptr<size_t> p)
-    {
-        tot_lhs = p;
-    }
-
-    std::shared_ptr<size_t> get_count_lhs()
-    {
-        return tot_lhs;
+        return probability;
     }
 
     private:
-
-    std::shared_ptr<size_t> tot_lhs = nullptr;
-    size_t count = 0;
+    double probability;
 };
 
 }; // namespace grammar::cfg

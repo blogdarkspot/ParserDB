@@ -5,20 +5,31 @@
 #include <utility>
 #include <vector>
 #include <rules.hpp>
+#include <string>
 
 namespace grammar::cfg
 {
 
-struct symbol
+struct symbol : public std::enable_shared_from_this<symbol>
 {
     std::wstring value;
     double probability;
     bool is_terminal;
     std::shared_ptr<symbol> left = nullptr;
     std::shared_ptr<symbol> right = nullptr;
+
+    bool operator<(const symbol& r) const
+    {
+        return std::tie(value) < std::tie(r.value);
+    }
+
+    bool operator()(const symbol& r) const
+    {
+        return std::tie(value) < std::tie(r.value);
+    }
 };
 
-struct symbols
+struct symbols : public std::enable_shared_from_this<symbols>
 {
     std::wstring value;
 
@@ -42,6 +53,27 @@ struct symbols
     {
         _rules.emplace_back(rhs);
         return *this;
+    }
+
+    symbols& operator+=(const std::shared_ptr<symbol>& rhs)
+    {
+        _rules.emplace_back(rhs);
+        return *this;
+    }
+
+    bool operator<(const symbols& r) const
+    {
+        return std::tie(value) < std::tie(r.value);
+    }
+
+    bool operator<(const symbol& r) const
+    {
+        return std::tie(value) < std::tie(r.value);
+    }
+    
+    void set_symbol(const std::shared_ptr<symbol>& rhs)
+    {
+        _rules.emplace_back(rhs);
     }
 
     private:

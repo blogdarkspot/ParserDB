@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Flask",
+           "name": "Python: Flask",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -17,7 +17,8 @@
             "args": [
                 "run",
                 "--no-debugger",
-                "--no-reload"
+                "--no-reload",
+                "--host=0.0.0.0"
             ],
             "cwd": "${workspaceFolder}/interface",
             "jinja": true
@@ -34,7 +35,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Unit Test",
-            "program": "${workspaceFolder}/build/tests/grammar_test",
+            "program": "${workspaceFolder}/build/tests/input_rules_test",
             "args": [],
             "cwd": "${workspaceFolder}/data",
             "console": "integratedTerminal"
