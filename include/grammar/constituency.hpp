@@ -1,10 +1,11 @@
 #ifndef __UNIT__
 #define __UNIT__
 
+#include "grammar/rules.hpp"
+
 #include <memory>
 #include <utility>
 #include <vector>
-#include <rules.hpp>
 #include <string>
 
 namespace grammar::cfg
@@ -14,9 +15,13 @@ struct symbol : public std::enable_shared_from_this<symbol>
 {
     std::wstring value;
     double probability;
+    std::wstring parent;
+    double parentProbability;
     bool is_terminal;
     std::shared_ptr<symbol> left = nullptr;
     std::shared_ptr<symbol> right = nullptr;
+    std::shared_ptr<symbol> terminal = nullptr;
+
 
     bool operator<(const symbol& r) const
     {

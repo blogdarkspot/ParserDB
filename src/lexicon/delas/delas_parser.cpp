@@ -290,6 +290,8 @@ void DelasToLexicon::fillPRO(DelasToLexicon::_LexiconType &lex, const DelasType 
 {
     auto itipo = tipo.find(word._trace);
 
+    lex.category->tipo = itipo;
+
     for (int i = 0; i < word._flexion.size(); ++i)
     {
         int j = 1;

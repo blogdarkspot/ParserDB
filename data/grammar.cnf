@@ -1,6 +1,6 @@
-DP -> ART NP | 0.6
-DP -> ART PossP | 0.2
-DP -> ART NumP | 0.2
+DP -> DET NP | 0.6
+DP -> DET PossP | 0.2
+DP -> DET NumP | 0.2
 NP -> N | 0.5
 NP -> NP AP | 0.1
 NP -> AP NP | 0.1
@@ -46,7 +46,8 @@ PP -> AdvP PP | 0.2
 PP -> PREP DP | 0.2
 PP -> PREP AdvP | 0.2
 PP -> PREP PP | 0.2
-PP -> PREP PP | 0.2
+PP -> PREP PP | 0.1
+PP -> PREP CP | 0.1
 AdvP -> ADV | 0.3
 AdvP -> AdvP AdvP | 0.3
 AdvP -> ADV PP | 0.3

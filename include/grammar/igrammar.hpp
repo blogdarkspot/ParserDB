@@ -3,8 +3,8 @@
 
 #include <memory>
 #include <vector>
-#include <rules.hpp>
-#include "constituency.hpp"
+#include "grammar/rules.hpp"
+#include "grammar/constituency.hpp"
 #include <string>
 
 namespace grammar::cfg

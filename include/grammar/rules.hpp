@@ -40,6 +40,8 @@ class rule : public std::enable_shared_from_this<rule>
         return _right_side;
     }
 
+    
+
     bool is_terminal()
     {
         return _is_terminal;
@@ -93,7 +95,7 @@ struct ProbabilisticRule : public rule
     friend std::wostream &operator<<(std::wostream &os, const ProbabilisticRule &r)
     {
         auto p = r.get_probability();
-        os << L"probability : " << p << L" " << (rule)(r);
+        os <<  (rule)(r) << L" p : " << p;
         return os;
     }
 
@@ -103,13 +105,24 @@ struct ProbabilisticRule : public rule
         probability = p;
     }
 
+    void set_childProbability(std::wstring c, double p)
+    {
+        childProbability[c] = p;
+    }
+
     const double get_probability() const
     {
         return probability;
     }
 
+    double get_parent_probability(std::wstring c)
+    {
+        return childProbability[c] == 0 ? 1 : childProbability[c];
+    }
+
     private:
     double probability;
+    std::map<std::wstring, double> childProbability;
 };
 
 }; // namespace grammar::cfg

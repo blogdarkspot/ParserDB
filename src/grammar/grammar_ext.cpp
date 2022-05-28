@@ -1,15 +1,16 @@
-#include <boost/python.hpp>
-
-#include "constituency.hpp"
-#include "rules.hpp"
-#include "pcfg.hpp"
-#include "cky.hpp"
-#include "igrammar.hpp"
-#include "input_rules.hpp"
+#include "grammar/constituency.hpp"
+#include "grammar/rules.hpp"
+#include "grammar/pcfg.hpp"
+#include "grammar/cky.hpp"
+#include "grammar/igrammar.hpp"
+#include "grammar/input_rules.hpp"
 #include "utils/matrix.hpp"
 #include "lexicon/lexicon.h"
+#include "lexicon/core/tokens.hpp"
 
+#include <boost/python.hpp>
 #include <boost/python/list.hpp>
+
 #include <iostream>
 #include <map>
 #include <memory>
@@ -40,7 +41,7 @@ void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::sym
     }
 }
 
-void printBT(const std::shared_ptr<grammar::cfg::symbol> node)
+void printBT(const std::shared_ptr<::grammar::cfg::symbol> node)
 {
     printBT(L"", node, false);    
 }
@@ -53,6 +54,7 @@ struct LexiconEntry
     std::wstring word;
     std::wstring lemma;
     std::wstring category;
+    std::wstring type;
 };
 
 struct TreeNote
@@ -73,9 +75,12 @@ struct Contraction
 
 int build_tree(const std::shared_ptr<grammar::cfg::symbol> node, std::vector<TreeNote>& result)
 {
+    if(node == nullptr)
+        std::cout << "sem valor" << std::endl;
     int ret = -1;
     if(node != nullptr)
     {
+        std::cout << "building ..." << std::endl;
         TreeNote value;
         value.value = node->value;
         if(node->is_terminal)
@@ -164,6 +169,38 @@ class grammar
 
         return ret2;
     }
+    
+    boost::python::list best_tree(boost::python::list tokens)
+    {
+        auto len = boost::python::len(tokens);
+        std::vector<std::wstring> vtokens;
+
+        std::cout << "computing best tree..." << std::endl;
+        
+        for(int i = 0; i < len; i++)
+        {
+          vtokens.emplace_back(boost::python::extract<std::wstring>(tokens[i]));
+        }
+
+        auto tree = _cky->get_best_tree(vtokens);
+        if(tree != nullptr)
+        {
+            std::cout << "has tree..." << std::endl;
+        }
+        boost::python::list ret2;
+
+            std::vector<TreeNote> result;
+            build_tree(tree, result);
+            boost::python::list pr;
+            std::cout << "arvores montadas ... " << result.size() << std::endl;
+            for(auto r : result)
+            {
+                pr.append(r);
+            }
+            ret2.append(pr);
+
+        return ret2;
+    }
 
     void delaf_path_file(std::string path)
     {
@@ -246,6 +283,13 @@ class grammar
             tmp.word = _lexicon->get_word_desc(entries[i]);
             tmp.lemma = _lexicon->get_lemma_desc(entries[i]);
             tmp.category = *(entries[i]->category->categoria);
+            if(tmp.category == L"PRO")
+            {
+                tmp.type = *(entries[i]->category->tipo);
+            }
+            else {
+                tmp.type = L"";
+            }
             ret.append(tmp);
         }
 
@@ -289,6 +333,7 @@ BOOST_PYTHON_MODULE(gramatico)
     .def("rules_info", &grammar::grammar::rules_info)
     .def("add_terminal", &grammar::grammar::add_terminal)
     .def("check", &grammar::grammar::check)
+    .def("best_tree", &grammar::grammar::best_tree)
     .def("load_delaf", &grammar::grammar::load_delaf)
     .def("get_word_info", &grammar::grammar::get_word_info)
     .def("set_delaf_path", &grammar::grammar::delaf_path_file)
@@ -305,7 +350,8 @@ BOOST_PYTHON_MODULE(gramatico)
   class_<grammar::LexiconEntry>("LexiconEntry")
     .def_readonly("word", &grammar::LexiconEntry::word)
     .def_readonly("lemma", &grammar::LexiconEntry::lemma)
-    .def_readonly("category", &grammar::LexiconEntry::category);
+    .def_readwrite("category", &grammar::LexiconEntry::category)
+    .def_readonly("type", &grammar::LexiconEntry::type);
 
    class_<lexicon::DelafInfo>("DelafInfo")
     .def_readonly("total_entry", &lexicon::DelafInfo::total_entry)

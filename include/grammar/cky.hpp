@@ -38,6 +38,7 @@ public:
     {
         auto encoded = encode(tokens);
         auto trees = _get_trees(encoded);
+        std::cout << "total tree find " << trees.size() << std::endl;
         return _get_best_tree(trees);
 
     }
@@ -51,8 +52,10 @@ private:
 
         for(const auto& tree : trees)
         {
+            auto tmp = tree;
             double probability = std::numeric_limits<double>::min();
-            compute_probability(tree, probability);
+            compute_probability(tmp, probability);
+            std::cout << "best probability " << best_probability << " current " << probability << std::endl;
             if(probability > best_probability)
             {
                 ret = tree;
@@ -64,6 +67,23 @@ private:
     }
 
     void compute_probability(std::shared_ptr<::grammar::cfg::symbol> node, double &p)
+    {
+        if(node == nullptr || node->is_terminal) return;
+
+        if(p == std::numeric_limits<double>::min())
+        {
+            p = node->probability;
+        }
+        else
+        {
+            p *= node->probability;
+        }
+
+        compute_probability(node->left, p);
+        compute_probability(node->right, p);
+    }
+
+    void compute_probability_parent(std::shared_ptr<::grammar::cfg::symbol> node, double &p)
     {
         if(node == nullptr) return;
 
@@ -79,6 +99,7 @@ private:
         compute_probability(node->left, p);
         compute_probability(node->right, p);
     }
+
 
     tree_list _get_trees(utils::colections::matrix<symbol_list>& m)
     {
@@ -96,16 +117,6 @@ private:
         return ret;
     }
 
-    std::map<int,std::map<int,std::set<std::shared_ptr<grammar::cfg::symbols>>>> encod2(std::vector<std::wstring> tokens)
-    {
-        std::map<int,std::map<int,std::set<std::shared_ptr<grammar::cfg::symbols>>>> ret;
-
-        for (int j = 1; j <= tokens.size(); ++j)
-        {
-
-        }
-        return ret;
-    }
 
     utils::colections::matrix<symbol_list> encode(std::vector<std::wstring> tokens)
     {
@@ -144,6 +155,8 @@ private:
                                  new_value->left = value;
                                  new_value->right = value2;
                                  new_value->probability = rule->get_probability();
+                                 value->parentProbability = rule->get_parent_probability(value->value);
+                                 value2->parentProbability = rule->get_parent_probability(value2->value);
                                  ret[i][j].emplace_back(new_value);
                             }
                         }

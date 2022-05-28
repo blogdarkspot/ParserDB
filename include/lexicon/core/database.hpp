@@ -170,6 +170,7 @@ template <typename _Key> class database
 
     size_t get_total_lexicon()
     {
+        print_info();
         return _total_lexicon;
     }
 
@@ -186,6 +187,25 @@ template <typename _Key> class database
         _total_contractions = 0;
     }
 
+    void print_info()
+    {
+        std::set<wstring> c;
+        int tot = 0;
+        int sum = 0;
+        for (auto const& [key, val] : _library_by_word)
+        {
+            for(auto &entry : val)
+            {
+               c.insert(*entry->category->categoria);
+            }
+
+            sum += c.size();
+            ++tot;
+            c.clear();
+        }
+        if(tot)
+            std::cout << "média de categoria por verbete " << (double)(sum / tot) << std::endl;
+    }
   private:
     std::size_t hash(const _Key &value)
     {

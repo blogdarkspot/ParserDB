@@ -4,3 +4,14 @@
     overflow:scroll;
     -webkit-overflow-scrolling: touch;
 }
+
+.vertical-center {
+    margin-top: 33%;
+}
+
+.align-center {
+    text-align: center;
+}
+[type='radio'] {
+display: none; 
+}
