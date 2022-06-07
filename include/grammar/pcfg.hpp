@@ -27,6 +27,18 @@ class PCFG
         _terminals[terminal->get_right_side()[0]].emplace_back(tmp);
     }
 
+    void set_canonical_terminal(std::wstring word, std::wstring category, std::wstring canonical)
+    {
+        std::wcout << L"set canonical " << L" " << word << L" " << canonical << L" "  << category << std::endl; 
+        _canonicals[std::make_pair(word, category)] = canonical;
+    }
+
+    std::wstring get_canonical_terminal(std::wstring word, std::wstring category)
+    {
+        std::wcout << L"get canonical " << L" " << word << L" "  << category << std::endl; 
+        return _canonicals[std::make_pair(word, category)];
+    }
+
     void clear_rules()
     {
         _rules.clear();
@@ -36,6 +48,7 @@ class PCFG
     void clear_terminals()
     {
         _terminals.clear();
+        _canonicals.clear();
     }
 
     virtual void set_rules(typename cfg::icfg::rule_ptr rule) 
@@ -81,8 +94,7 @@ class PCFG
                     
                     if(rule->is_valid(grammarR))
                     {
-                        auto tmp1 = std::make_shared<ProbabilisticRule>(rule->get_left_side(), i->get_right_side(), true);
-                        ret.emplace_back(tmp1);
+                        ret.emplace_back(rule);
                     }
                 }
             }
@@ -120,6 +132,7 @@ class PCFG
     std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> _rules;
     std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> _rules_terminal;
     std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> _terminals;
+    std::map<std::pair<std::wstring, std::wstring>, std::wstring> _canonicals;
     std::wstring _symbol;
 
   public:

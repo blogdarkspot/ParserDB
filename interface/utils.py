@@ -54,11 +54,11 @@ def build_terminals(sentence, gramatico):
                     for contraction in contractions:
                         prefix = contraction.prefix
                         suffix = contraction.suffix
-                        terminals.add((contraction.prefix_class, contraction.prefix))
-                        terminals.add((contraction.suffix_class, contraction.suffix))
+                        terminals.add((contraction.prefix_class, contraction.prefix, u'{}'.format(entry.lemma)))
+                        terminals.add((contraction.suffix_class, contraction.suffix, u'{}'.format(entry.lemma)))
                 else:
                     entry = parser_tokens(entry)
-                    terminals.add((u'{}'.format(entry.category), u'{}'.format(entry.word)))
+                    terminals.add((u'{}'.format(entry.category), u'{}'.format(entry.word), u'{}'.format(entry.lemma)))
             if prefix != '' and suffix != '':
                 newtokens.append(prefix)
                 newtokens.append(suffix)
@@ -66,7 +66,7 @@ def build_terminals(sentence, gramatico):
                 newtokens.append(token)
         
     for terminal in terminals:
-        gramatico.add_terminal(terminal[0], terminal[1])
+        gramatico.add_terminal_ca(terminal[0], terminal[1], terminal[2])
     
     results = gramatico.check(newtokens)
     return results

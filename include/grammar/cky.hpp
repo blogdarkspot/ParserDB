@@ -128,11 +128,30 @@ private:
 
             for(const auto& lex : lexicons)
             {
+                auto new_value = std::make_shared<grammar::cfg::constituency>();
+                new_value->value = lex->get_left_side();
+                new_value->probability = lex->get_probability();
+                auto canonical = _cfg->get_canonical_terminal(tokens[j - 1], lex->get_left_side());
+                if(canonical == L"")
+                    canonical = _cfg->get_canonical_terminal(tokens[j - 1], lex->get_right_side()[0]);
+
+                std::wcout << "canonical from " << lex->get_right_side()[0] << " canonical " << canonical << std::endl;
+                new_value->canonical = canonical;
+                new_value->category = lex->get_right_side()[0];
+                ret[j - 1][j].emplace_back(new_value);
+
                 auto tmp = std::make_shared<grammar::cfg::lexicon>();
                 tmp->is_terminal = true;
-                tmp->value = lex->get_left_side();
-                tmp->lex = lex->get_right_side()[0];
-                ret[j - 1][j].emplace_back(tmp);
+                tmp->value = lex->get_right_side()[0];
+                if(tokens[j - 1] != lex->get_right_side()[0])
+                {
+                    tmp->lex = tokens[j - 1];
+                }
+                else {
+                    tmp->lex = L"";
+                }
+
+                new_value->left = tmp;
             }
 
             for (int i = j - 2; i >= 0; --i)
@@ -157,6 +176,9 @@ private:
                                  new_value->probability = rule->get_probability();
                                  value->parentProbability = rule->get_parent_probability(value->value);
                                  value2->parentProbability = rule->get_parent_probability(value2->value);
+                                 auto t = assing_head(rule->get_left_side(), value, value2);
+                                 new_value->canonical = t->canonical;
+                                 new_value->category = t->category;
                                  ret[i][j].emplace_back(new_value);
                             }
                         }
@@ -166,6 +188,57 @@ private:
         }
         return ret;
     }
+
+std::shared_ptr<grammar::cfg::symbol> find(const std::wstring& symbol, 
+            std::shared_ptr<grammar::cfg::symbol> value, 
+            std::shared_ptr<grammar::cfg::symbol> value2,
+            bool inverse = false)
+{
+    if(value->category == symbol)
+        return inverse ? value2 : value;
+    else
+        return inverse ? value : value2;
+}
+
+
+std::shared_ptr<grammar::cfg::symbol> assing_head(std::wstring lhs, std::shared_ptr<grammar::cfg::symbol> value, std::shared_ptr<grammar::cfg::symbol> value2)
+    {
+        if(lhs == L"VP" || lhs == L"SP")
+        {
+            return find(L"V", value, value2);
+        }
+        if(lhs == L"NP")
+        {
+            return find(L"N", value, value2);
+        }
+        if(lhs == L"PP")
+        {
+            return find(L"PREP", value, value2);
+        } 
+        if(lhs == L"DET" || lhs == L"IP")
+        {
+            return value2;
+        }
+        if(lhs == L"NumP" || lhs == L"CP")
+        {
+                return value;
+        }
+        if(lhs == L"PossP")
+        {
+            return find(L"Poss", value, value2);
+        }
+        if(lhs == L"AP")
+        {
+            return find(L"A", value, value2);
+        }
+        if(lhs == L"ADV")
+        {
+            return find(L"ADV", value, value2);
+        }
+        return value;
+    }
+
+
 
     std::shared_ptr<::grammar::cfg::PCFG> _cfg;
 };

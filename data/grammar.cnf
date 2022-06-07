@@ -1,11 +1,12 @@
-DP -> DET NP | 0.6
+DP -> DET NP | 1.6
 DP -> DET PossP | 0.2
 DP -> DET NumP | 0.2
-NP -> N | 0.5
+NP -> N | 0.3
 NP -> NP AP | 0.1
 NP -> AP NP | 0.1
 NP -> NP PP | 0.1
 NP -> NP CP | 0.2
+NP -> NP N | 0.2
 NumP -> NUM NP | 0.7
 NumP -> NUM PP | 0.3
 PossP -> Poss NP | 0.4
@@ -20,21 +21,22 @@ VP -> V CP | 0.1
 VP -> V AP | 0.1
 VP -> V AdvP | 0.1
 VP -> V PP | 0.1
+VP -> VP PP | 0.1
 VP -> V IP | 0.1
-IP -> DP'IP | 0.08
-IP -> DP IP | 0.08
-IP -> DP VP | 0.08
-IP -> NP 'IP | 0.08
-IP -> NP IP | 0.08
-IP -> NP VP | 0.08
-IP -> PossP 'IP | 0.08
-IP -> PossP IP | 0.08
-IP -> PossP VP | 0.08
-IP -> NumP 'IP | 0.08
-IP -> NumP IP | 0.08
-IP -> NumP VP | 0.08
-'IP -> I VP | 0.5
-'IP -> I IP | 0.5
+SP -> DP 'IP | 0.08
+SP -> DP IP | 0.08
+SP -> DP VP | 0.08
+SP -> NP IP | 0.08
+SP -> NP VP | 0.08
+SP -> PossP 'IP | 0.08
+SP -> PossP IP | 0.08
+SP -> PossP VP | 0.08
+SP -> NumP IP | 0.08
+SP -> NumP VP | 0.08
+SP -> V VP | 0.08
+SP -> V IP | 0.08
+IP -> V VP | 0.5
+IP -> V IP | 0.5
 CP -> CONJ IP | 1.0
 AP -> A | 0.16 
 AP -> AdvP AP | 0.16

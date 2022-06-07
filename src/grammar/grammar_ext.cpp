@@ -75,14 +75,11 @@ struct Contraction
 
 int build_tree(const std::shared_ptr<grammar::cfg::symbol> node, std::vector<TreeNote>& result)
 {
-    if(node == nullptr)
-        std::cout << "sem valor" << std::endl;
     int ret = -1;
     if(node != nullptr)
     {
-        std::cout << "building ..." << std::endl;
         TreeNote value;
-        value.value = node->value;
+        value.value = L"(" + node->value + L"," + node->parent + L"," + node->canonical + L")";
         if(node->is_terminal)
         {
             value.terminal = (std::static_pointer_cast<grammar::cfg::lexicon>(node))->lex;
@@ -136,6 +133,17 @@ class grammar
         std::vector<std::wstring> _right;
         _right.emplace_back(right);
         auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule>(left, _right, true);
+        terminal->set_probability(1);
+        _pcfg->set_terminals(terminal);
+    }
+
+    void add_terminal_ca(std::wstring left, std::wstring right, std::wstring canonical)
+    {
+        std::vector<std::wstring> _right;
+        _right.emplace_back(right);
+        auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule>(left, _right, true);
+        _pcfg->set_canonical_terminal(right, left, canonical);
+        terminal->set_probability(1);
         _pcfg->set_terminals(terminal);
     }
 
@@ -175,7 +183,6 @@ class grammar
         auto len = boost::python::len(tokens);
         std::vector<std::wstring> vtokens;
 
-        std::cout << "computing best tree..." << std::endl;
         
         for(int i = 0; i < len; i++)
         {
@@ -183,16 +190,12 @@ class grammar
         }
 
         auto tree = _cky->get_best_tree(vtokens);
-        if(tree != nullptr)
-        {
-            std::cout << "has tree..." << std::endl;
-        }
+
         boost::python::list ret2;
 
             std::vector<TreeNote> result;
             build_tree(tree, result);
             boost::python::list pr;
-            std::cout << "arvores montadas ... " << result.size() << std::endl;
             for(auto r : result)
             {
                 pr.append(r);
@@ -332,6 +335,7 @@ BOOST_PYTHON_MODULE(gramatico)
     .def("add_rule", &grammar::grammar::add_rule)
     .def("rules_info", &grammar::grammar::rules_info)
     .def("add_terminal", &grammar::grammar::add_terminal)
+    .def("add_terminal_ca", &grammar::grammar::add_terminal_ca)
     .def("check", &grammar::grammar::check)
     .def("best_tree", &grammar::grammar::best_tree)
     .def("load_delaf", &grammar::grammar::load_delaf)

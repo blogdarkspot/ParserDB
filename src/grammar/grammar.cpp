@@ -9,6 +9,7 @@
 #include "lexicon/lexicon.h"
 #include "lexicon/ceten_folha/ceten_folha.hpp"
 
+#include <cstdlib>
 #include <cwctype>
 #include <iostream>
 #include <memory>
@@ -187,7 +188,7 @@ struct rule
                 left = out[i];
                 continue;
             }
-            if(out[i] == L"-->")
+            if(out[i] == L"->")
             {
                 continue;
             }
@@ -290,7 +291,7 @@ struct r
 
     std::string str()
     {
-        std::string ret = cat + " --> ";
+        std::string ret = cat + " -> ";
         for(int i = 0; i < edges.size(); ++i)
         {
             ret += edges[i];
@@ -305,7 +306,7 @@ struct r
 
     void print(bool a)
     {
-        std::cout << cat << " --> ";
+        std::cout << cat << " -> ";
         for(auto& ed : edges) 
         {
             std::cout << ed << " ";
@@ -315,71 +316,96 @@ struct r
 };
 
 std::map<std::string, r> rules;
+std::shared_ptr<grammar::cfg::PCFG> _pcfg;
+std::shared_ptr<grammar::parser::cky> _cky;
+std::shared_ptr<lexicon::lexicon> _lexicon;
 
-std::vector<r> parser_graph(boost::property_tree::ptree& graph, std::vector<std::pair<std::string,std::string>>&);
+int parser_graph(boost::property_tree::ptree& graph, std::vector<std::pair<std::string,std::string>>&);
 
+std::set<std::string> categorias;
 std::set<r> filtred_rules;
 std::vector<std::vector<std::pair<std::string,std::string>>> sentencas;
+
+
+void get_rules()
+{
+    boost::property_tree::ptree root;
+    boost::property_tree::read_xml("propbank_br_v2.xml", root);
+    auto corpus = root.get_child("corpus").get_child("body");
+    std::vector<std::pair<std::string, std::string>> sentenca;
+    for(const auto& z : corpus)
+    {
+        auto graph = z.second.get_child("graph");
+        parser_graph(graph, sentenca);
+    }
+};
+
 void xml()
 {
     boost::property_tree::ptree root;
     boost::property_tree::read_xml("propbank_br_v2.xml", root);
-    auto corpus = root.get_child("corpus");
-    auto y = corpus.get_child("body");
+    auto corpus = root.get_child("corpus").get_child("body");
     int tot_sentencas = 0;
     std::vector<std::pair<std::string, std::string>> sentenca;
-
-    for(const auto& z : y)
-    {
-        auto graph = z.second.get_child("graph");
-        auto ruls = parser_graph(graph, sentenca);
-
-        if(sentenca.size() > 0)
-        {
-            sentencas.emplace_back(sentenca);
-        }
-
-        for(auto& r : ruls)
-        {
-            filtred_rules.insert(r);
-        }
-    }
-    std::cout << "total de sentenças " << sentencas.size() << std::endl;
+    int succ = 0;
+    int fail = 0;
+    _pcfg->set_start_symbol(L"IP");
 
     std::locale utf8{"en_US.UTF-8"};
     std::ofstream _debug("debug_words.txt");
     std::ofstream _sdebug("debug_sentences.txt");
 
-    int tot = 0;
-    int sum_size = 0;
-
-    for(auto frul : filtred_rules)
+    for(const auto& z : corpus)
     {
-        ++tot;
-        sum_size += frul.rhs_size();
-        //f.first.print(_debug);
-            _debug << frul.str();
-    }
-
-    for(auto set : sentencas)
-    {
-        for(auto token : set)
+        auto graph = z.second.get_child("graph");
+        tot_sentencas += parser_graph(graph, sentenca);
+        _pcfg->clear_terminals();
+        std::vector<std::wstring> wsentence;
+        for(const auto token : sentenca)
         {
-            _sdebug << token.first << " ";
+                std::wstring w = std::wstring(token.first.begin(), token.first.end());
+                wsentence.emplace_back(w);
+                std::vector<std::wstring> _right;
+                _right.emplace_back(w);
+                auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule>(std::wstring(token.second.begin(), token.second.end()), _right, true);
+                _pcfg->set_terminals(terminal);
         }
-        _sdebug << std::endl;
-    }
 
-    std::cout << "media de tamanho das regras " <<  sum_size / tot << " total " << tot << std::endl;
+        auto ret = _cky->get_best_tree(wsentence);
+
+        if(ret != nullptr)
+        {
+            succ++;
+        }
+        else
+        {
+            fail++;
+            for(auto t : sentenca)
+            {
+                _sdebug << t.first << " ";
+            }
+            _sdebug << std::endl;
+            for(auto t : sentenca)
+            {
+                _sdebug << t.second << " ";
+            }
+            _sdebug << std::endl;
+            _sdebug << std::endl;
+        }
+        sentenca.clear(); 
+        ++tot_sentencas;
+    }
+    std::cout << "total de sentenças " << tot_sentencas << std::endl;
+    
 } 
 
-
-
-std::vector<r> parser_graph(boost::property_tree::ptree& graph, std::vector<std::pair<std::string, std::string>>& sentenca)
+int pro = 0;
+int parser_graph(boost::property_tree::ptree& graph, std::vector<std::pair<std::string, std::string>>& sentenca)
 {
     auto terminals = graph.get_child("terminals");
     auto no_terminals = graph.get_child("nonterminals");
     rules.clear();
+    int i = 0;
     for(const auto& t : terminals)
     {
         const auto& attrs = t.second.get_child("<xmlattr>");
@@ -401,297 +427,86 @@ std::vector<r> parser_graph(boost::property_tree::ptree& graph, std::vector<std:
                 ter.word = attr.second.data();
             }
         }
-        sentenca.emplace_back(std::make_pair(ter.word, ter.cat));
         rules[id] = ter;
+        filtred_rules.insert(ter);
     }
 
-    for(const auto& terminal : no_terminals)
+    for(const auto& n : no_terminals)
     {
-        const auto& attrs = terminal.second.get_child("<xmlattr>");
 
-
-        std::string id = "";
-        r ru;
-
-        for(const auto& attr : attrs)
+        r r;
+        for(const auto& nt : n.second)
         {
-            auto value = attr.first.data();
-            if(std::string(attr.first.data()) == "id")
+            if (std::string(nt.first.data()) == "<xmlattr>")
             {
-                id = attr.second.data();
-            }
-
-            if(std::string(attr.first.data()) == "cat")
-            {
-                ru.cat = attr.second.data();
-            }
-        }
-
-        for(const auto& edge : terminal.second)
-        {
-            if(std::string(edge.first.data()) == "<xmlattr>") continue;  
-
-            const auto& attrs2 = edge.second.get_child("<xmlattr>");
-            for(const auto& attr2 : attrs2)
-            {
-                if(std::string(attr2.first.data()) == "idref")
+                for (const auto attr : nt.second)
                 {
+                    if (std::string(attr.first.data()) == "cat")
+                    {
+                        r.cat = attr.second.data();
+                    }
+                }
+            }
 
-                    ru.edges.emplace_back(attr2.second.data());
+            if(std::string(nt.first.data()) == "edge")
+            {
+                for(const auto attr : nt.second)
+                {
+                    if (std::string(attr.first.data()) == "<xmlattr>")
+                    {
+                        for(const auto ed : attr.second)
+                        {
+                            if(std::string(ed.first.data()) == "label")
+                            {
+                                r.edges.emplace_back(ed.second.data());
+                            }
+                        }
+                    }
                 }
             }
         }
-        rules[id] = ru;
+        filtred_rules.insert(r);
     }
-
-    std::vector<r> ret;
-
-    for(const auto& p : rules)
-    {
-        r tmp;
-        tmp.cat = p.second.cat;
-
-        for(const auto&v : p.second.edges)
-        {
-            tmp.edges.emplace_back(rules[v].cat);
-        }
-        if(p.second.edges.size() > 3)
-        {
-            sentenca.clear();
-        }
-        if(p.second.edges.size() != 0 && p.second.edges.size() <=3)
-            ret.emplace_back(tmp);
-    }
-
-    return ret;
-
+    return 1;
 }
 
-void readCnf()
-{
-    std::locale utf8{"en_US.UTF-8"};
-    std::wifstream _debug("grammar.cnf");
-    std::wstring line;
-    std::vector<rule> rs;
 
-    std::set<rule> cnf;
-    std::set<std::wstring> tokens;
-    
-    while (std::getline(_debug, line))
+
+bool load_cnf()
+{
+    auto ret = true;
+    ::grammar::cfg::file file;
+    file.set_path("grammar.cnf");
+    ret = file.open();
+    if(ret)
     {
-        auto ru = rule(line);
-        cnf.insert(ru); 
-        tokens.insert(ru.left);
-        for(auto& i : ru.right )
+        auto rules = file.get_all();
+        if(rules.size() == 0)
         {
-            tokens.insert(i);
+            ret = false;
+        }
+        else {
+            for(auto rule : rules)
+            {
+                if(rule != nullptr)
+                    _pcfg->set_rules(rule);
+            }
         }
     }
-
-    for(auto& i : tokens)
-    {
-        std::wcout << i << std::endl;
-    }
+    return ret;
 }
 
 int main()
 {
-   //xml();
-   //cfgTocnf();
-   readCnf();
+  //  _pcfg = std::make_shared<grammar::cfg::PCFG>();
+  //  _cky = std::make_shared<grammar::parser::cky>();
+  //  _lexicon = std::make_shared<lexicon::lexicon>();
+  //  _cky->set_cfg(_pcfg);
+  // load_cnf();
+  // xml();
+
+    get_rules();
+
    std::cout << " finished " << std::endl;
-   // ceten_parser();
-    /*
-    auto g = grammar::grammar();
-    g.add_rule(L"S -> NP VP");
-    g.add_rule(L"S -> VP NP");
-    g.add_rule(L"S -> VP");
-    g.add_rule(L"S -> ADVP S");
-
-    g.add_rule(L"DP -> ART");
-    g.add_rule(L"DP -> ART NP");
-    g.add_rule(L"DP -> ART NumP");
-    g.add_rule(L"DP -> ART PossP");
-
-    g.add_rule(L"DP -> PRO");
-    g.add_rule(L"DP -> PRO NP");
-    g.add_rule(L"DP -> PRO NumP");
-    g.add_rule(L"DP -> PRO PossP");
-
-    g.add_rule(L"NP -> N");
-    g.add_rule(L"NP -> NP AP");
-    g.add_rule(L"NP -> AP NP");
-    g.add_rule(L"NP -> NP PP");
-    g.add_rule(L"NP -> N PP");
-
-    g.add_rule(L"NumP -> NUM NP");
-    g.add_rule(L"NumP -> NUM PP");
-
-    g.add_rule(L"PossP -> POSS NP");
-    g.add_rule(L"PossP -> NP POSS");
-    g.add_rule(L"PossP -> POSS NumP");
-
-    g.add_rule(L"AP -> A");
-    g.add_rule(L"AP -> ADVP AP");
-    g.add_rule(L"AP -> AP ADVP");
-    g.add_rule(L"AP -> AP PP");
-    g.add_rule(L"AP -> A PP");
-    g.add_rule(L"AP -> A CP");
-
-    g.add_rule(L"PP -> ADVP PP");
-    g.add_rule(L"PP -> PREP DP");
-    g.add_rule(L"PP -> PREP ADVP");
-    g.add_rule(L"PP -> PREP CP");
-    g.add_rule(L"PP -> PREP PP");
-    g.add_rule(L"PP -> PREP");
-
-    g.delaf_path_file("delaf_linux.dic");
-    g.delaf_constractions_file("contracoes.cont");
-    
-    auto ret = g.load_delaf();
-    while(ret)
-    {
-        std::wstring msg = L"um jogador de futebol do benfica";
-        std::wistringstream iss(msg);
-        std::wstring s;
-        std::vector<std::wstring> tokens;
-        while (std::getline( iss, s, L' ' ) ) {
-            tokens.emplace_back(s);
-        }
-
-        for(const auto& token : tokens)
-        {
-            auto lex = g.get_word_info(token);
-
-            std::set<std::wstring> l, r;
-            for(const auto u : lex)
-            {
-                if((*u->category->categoria) == L"CON")
-                {
-                        auto entry = g.get_word_desc(u);
-                        auto result = g.split_contraction(entry);
-                        for(auto& v : result)
-                        {
-                            g.add_terminal(v.first.second, v.first.first);
-                            g.add_terminal(v.second.second, v.second.first);
-                        }
-                }
-                else
-                {
-                    std::wstring sterminal = g.get_word_desc(u);
-                    std::wstring snoterminal(*u->category->categoria);
-
-                    auto it1 = l.find(snoterminal);
-                    auto it2 = r.find(sterminal);
-
-                    if (it1 != l.end() && it2 != r.end())
-                        continue;
-                    ;
-
-                    l.insert(snoterminal);
-                    r.insert(sterminal);
-
-                    g.add_terminal(snoterminal, sterminal);
-                }
-            }
-        }
-        g.check(tokens);
-    }
-
-    g.add_terminal(L"PRO", L"aquele");
-    g.add_terminal(L"N", L"computador");
-//    std::wcout << g.rules_info() << std::endl;
-*/
-    return 0;
-}
-
-void ceten_parser()
-{
-
-  //  auto g = grammar::grammar();
-  //  g.delaf_path_file("delaf_linux.dic");
-  //  g.delaf_constractions_file("contracoes.cont");
-    
-    //auto ret = g.load_delaf();
-    std::locale utf8{"en_US.UTF-8"};
-    std::wofstream _debug("debug_words.txt");
-    std::wofstream _debug_class("debug_class.txt");
-    _debug.imbue(utf8);
-    _debug_class.imbue(utf8);
-
-    corpus::folha::decoder decoder;
-    decoder.load_file("CETENFolha-1.0_jan2014.cg");
-    std::set<std::wstring> checked_classes;
-    if(decoder.parser_file())
-    {
-        auto corpus = decoder.get_corpus();
-
-        for(auto& corpus_u : corpus)
-        {
-            for(auto& lex : corpus_u->_lexicon)
-            {
-
-                std::wstring original_class;
-                original_class = lex->category;
-
-                if (lexicon::CategoryType.find(lex->category) != lexicon::CategoryType.end())
-                    continue;
-
-                if (lex->category == L"PRP")
-                {
-                    lex->category = L"PREP";
-                }else
-                if (lex->category == L"PROP")
-                {
-                    lex->category = L"N";
-                }else
-                if (lex->category == L"ADJ")
-                {
-                    lex->category = L"A";
-                }else
-                if (lex->category == L"KS")
-                {
-                    lex->category = L"CONJ";
-                }else
-                if (lex->category == L"KC")
-                {
-                    lex->category = L"CONJ";
-                }else
-                if (lex->category == L"IN")
-                {
-                    lex->category = L"INTERJ";
-                }else
-                if (lex->category == L"EC")
-                {
-                    lex->category = L"PFX";
-                }else
-                if (lex->category == L"SPEC" || lex->category == L"PERS")
-                {
-                    lex->category = L"PRO";
-                }else
-                if (lex->category == L"DET")
-                {
-                    for (auto sec : lex->secundary_information)
-                    {
-                        if (sec == L"<artd>" || sec == L"<arti>")
-                        {
-                            lex->category = L"ART";
-                            break;
-                        }
-                        if (sec == L"<quant>" || sec == L"<dem>" || sec == L"<poss>" || sec == L"<refl>" ||
-                            sec == L"<rel>" || sec == L"<interr>")
-                        {
-                            lex->category = L"PRO";
-                        }
-                        else
-                        {
-                            std::wcout << L"unkown categoria " << lex->category  << L" sec: info " << sec << std::endl;
-                        }
-                    }
-                }else {
-                    std::wcout << L"unkown categoria " << lex->category << std::endl;
-                }
-            }
-        }
-    }
+   return 0;
 }

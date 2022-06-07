@@ -1,24 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="align-center">{% block title %} Gramatico {% endblock %}</h1>
+<h1 class="align-center">{% block title %} Gramático {% endblock %}</h1>
 <div class="container vertical-center">
-
+  
   <div class="row justify-content-md-center">
+    
     <div class="col justify-content-md-center">
       <form class="row g-3" method="post">
         <div class="col-md-4 ">
-         <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-              <input type="radio" class="btn-check" name="tree" value="best_tree" id="btnradio1" autocomplete="off" checked>
-              <label class="btn btn-outline-primary" for="btnradio1">best tree</label>
-              <input type="radio" class="btn-check" name="tree" value="all_trees" id="btnradio2" autocomplete="off">
-              <label class="btn btn-outline-primary" for="btnradio2">all trees</label>
+         <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Basic radio toggle button group">
+              <label class="btn btn-outline-primary" for="btnradio1">
+                <input type="radio" class="btn-check" name="tree" value="best_tree" id="btnradio1" autocomplete="off"> Melhor árvore
+              </label>
+              <label class="btn btn-outline-primary" for="btnradio2">
+                <input type="radio" class="btn-check" name="tree" value="all_trees" id="btnradio2" autocomplete="off" checked> Todas as árvores
+              </label>
         </div> 
         </div>
         <div class="input-group col-12">
         <input type="text" name="text" class="form-control" id="inputSentence" aria-describedby="emailHelp" placeholder="ex: aquele computador">
           <span class="input-group-btn">
-           <button type="submit" name="submit_button" value="check" class="btn btn-primary"><span class="bi-search"></span>Submit</button>
+           <button type="submit" name="submit_button" value="check" class="btn btn-primary"><span class="bi-search"></span> Verificar</button>
           </span>
         </div>
         <div class="col-md-4">
@@ -33,7 +36,8 @@
 <div class="row justify-content-md-center">
 
   <div class="col justify-content-md-center">
-  <div id="carouselExampleControls" class="carousel slide" data-interval="false" data-ride="carousel">
+    {% if graphs is defined and graphs|length > 0 %}
+  <div id="carouselExampleControls" class="carousel carousel-dark slide" data-interval="false" data-ride="carousel">
 
     <div class="carousel-inner">
       {% for graph in graphs%}
@@ -48,15 +52,18 @@
           {% endif %}
       {% endfor %}
     </div>
+    {% if graphs|length > 1 %}
     <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="carousel-control-prev-icon" aria-hidden="false"></span>
       <span class="sr-only">Previous</span>
     </a>
     <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="carousel-control-next-icon" aria-hidden="false"></span>
       <span class="sr-only">Next</span>
     </a>
+    {% endif %}
   </div>
+  {% endif %}
 </div>
 
 
@@ -72,15 +79,6 @@
 
           <div class="modal-body">
             <form method="post" action="/config" id="files" enctype="multipart/form-data">
-            <div class="form-group">
-              <label for="DelafPath">Delaf File Path:</label>
-              <input type="file" name="file_delaf" class="form-control-file" id="DelafPath">
-            </div>
-            <div class="form-group">
-              <label for="Contracoes">Contrações Path:</label>
-              <input type="file" name="file_contracoes" class="form-control-file" id="Contracoes">
-            </div>
-
             <div class="form-group">
               <label for="Gramatica">Gramática Path:</label>
               <input type="file" name="file_gramatica" class="form-control-file" id="Gramatica">

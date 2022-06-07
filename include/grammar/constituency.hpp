@@ -16,6 +16,8 @@ struct symbol : public std::enable_shared_from_this<symbol>
     std::wstring value;
     double probability;
     std::wstring parent;
+    std::wstring canonical;
+    std::wstring category;
     double parentProbability;
     bool is_terminal;
     std::shared_ptr<symbol> left = nullptr;

@@ -3,12 +3,6 @@ import os
 class Files:
 
     def save_files(self, app, request):
-        if 'file_delaf' in request.files:
-            delaf = request.files['file_delaf']
-            self.__save_file(app, delaf)
-        if 'file_contracoes' in request.files:
-            contracoes = request.files['file_contracoes']
-            self.__save_file(app, contracoes)
         if 'file_gramatica' in request.files:
             gramatica = request.files['file_gramatica']
             self.__save_file(app, gramatica)
