@@ -9,7 +9,11 @@ SP -> NumP VP | 0.08
 SP -> V VP | 0.08
 SP -> V IP | 0.08
 IP -> V VP | 1.0
-CP -> CONJ IP | 1.0
+CP -> CONJ IP | 0.5
+CP -> CONJ VP | 0.5
+CP -> CONJ CP' | 0.5
+CP' -> DP VP | 0.5
+CP' -> DP IP | 0.5
 DP -> DET NP | 1.6
 DP -> DET PossP | 0.2
 DP -> DET NumP | 0.2

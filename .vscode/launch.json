@@ -35,17 +35,15 @@
             "type": "lldb",
             "request": "launch",
             "name": "Unit Test",
-            "program": "${workspaceFolder}/build/tests/input_rules_test",
+            "program": "${workspaceFolder}/build/tests/grammar_test",
             "args": [],
-            "cwd": "${workspaceFolder}/data",
-            "console": "integratedTerminal"
-            
+            "cwd": "${workspaceFolder}/data"
         },
         {
             "type": "lldb",
             "request": "launch",
             "name": "Unit Test Debug",
-            "program": "${workspaceFolder}/build/tests/grammar_test",
+            "program": "${workspaceFolder}/build/src/grammar/main",
             "args": [],
             "cwd": "${workspaceFolder}/data",
             "preLaunchTask": "${defaultBuildTask}"

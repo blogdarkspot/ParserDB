@@ -34,6 +34,12 @@ public:
         return _get_trees(encoded);
     }
 
+    tree_list get_trees2(std::vector<std::wstring> tokens)
+    {
+        auto e = encode2(tokens);
+        return _get_trees(e, tokens.size());
+    }
+
     virtual std::shared_ptr<::grammar::cfg::symbol> get_best_tree(std::vector<std::wstring> tokens)
     {
         auto encoded = encode(tokens);
@@ -117,6 +123,130 @@ private:
         return ret;
     }
 
+    tree_list _get_trees(std::map<int, std::map<int, symbol_list>>& m, int sz)
+    {
+        tree_list ret;
+        auto pos0n = m[0][sz]; 
+        
+        for(const auto& pos : pos0n)
+        {
+            if(pos->value == _cfg->get_start_symbol())
+            {
+                ret.emplace_back(pos);
+            }
+        }
+
+        return ret;
+    }
+
+
+    std::map<int, std::map<int, symbol_list>> encode2(std::vector<std::wstring> tokens)
+    {
+        std::map<int, std::map<int, symbol_list>> ret;
+        for (int j = 1; j <= tokens.size(); ++j)
+        {
+            {
+
+                auto terminais = _cfg->get_terminals();
+                auto t_categories = terminais[tokens[j - 1]];
+                auto rules = _cfg->get_terminal_rules();
+
+                for (const auto &kv : rules)
+                {
+                    const auto &lhs = kv.first;
+                    const auto &rules = kv.second;
+
+                    for (const auto &rule : rules)
+                    {
+                        for (const auto &category : t_categories)
+                        {
+
+                            if (rule->get_right_side()[0] == category->get_left_side())
+                            {
+
+                                auto new_value = std::make_shared<grammar::cfg::symbol>();
+                                new_value->value = rule->get_left_side();
+                                new_value->canonical = category->get_right_side()[1];
+                                new_value->probability = rule->get_probability();
+                                new_value->terminal = tokens[j - 1];
+
+                                ret[j - 1][j].emplace_back(new_value);
+
+                            }
+                        }
+                    }
+                }
+
+                for (const auto terminal : t_categories)
+                {
+                    auto new_value = std::make_shared<grammar::cfg::symbol>();
+                    new_value->value = terminal->get_left_side();
+                    new_value->probability = terminal->get_probability();
+                    new_value->terminal = tokens[j -1];
+                    ret[j - 1][j].emplace_back(new_value);
+                }
+
+                {
+                    auto mrules = _cfg->get_rules();
+
+                    for (int i = j - 2; i >= 0; --i)
+                    {
+                        for (int k = i + 1; k <= j - 1; ++k)
+                        {
+                            for(const auto& kv : mrules)
+                            {
+                                const auto& lhs = kv.first;
+                                const auto& rules = kv.second;
+
+                                for(const auto& rule : rules)
+                                {
+                                    auto rhs1 = find(rule->get_right_side()[0], ret[i][k]);
+                                    auto rhs2 = find(rule->get_right_side()[1], ret[k][j]);
+
+                                    if(rhs1 != nullptr && rhs2 != nullptr)
+                                    {
+                                        auto new_value = std::make_shared<grammar::cfg::constituency>();
+                                        new_value->value = rule->get_left_side();
+                                        new_value->left = rhs1;
+                                        new_value->right = rhs2;
+                                        new_value->probability = rule->get_probability();
+                                        //rhs1->parentProbability = rule->get_parent_probability(rhs1->value);
+                                        //rhs2->parentProbability = rule->get_parent_probability(rhs2->value);
+                                        ret[i][j].emplace_back(new_value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    std::shared_ptr<grammar::cfg::symbol> find(std::wstring token, const symbol_list& list)
+    {
+        std::shared_ptr<grammar::cfg::symbol> ret = nullptr;    
+
+        for(const auto& value : list)
+        {
+            if(value->value == token)
+            {
+                if(ret == nullptr)
+                {
+                    ret = value;
+                    continue;
+                } 
+
+                if(ret->probability < value->probability)
+                {
+                    ret = value;
+                }
+            }
+        }
+        return ret;
+    }
 
     utils::colections::matrix<symbol_list> encode(std::vector<std::wstring> tokens)
     {
@@ -131,15 +261,7 @@ private:
                 auto new_value = std::make_shared<grammar::cfg::constituency>();
                 new_value->value = lex->get_left_side();
                 new_value->probability = lex->get_probability();
-                auto canonical = _cfg->get_canonical_terminal(tokens[j - 1], lex->get_left_side());
-                if(canonical == L"")
-                    canonical = _cfg->get_canonical_terminal(tokens[j - 1], lex->get_right_side()[0]);
-
-                std::wcout << "canonical from " << lex->get_right_side()[0] << " canonical " << canonical << std::endl;
-                new_value->canonical = canonical;
-                new_value->category = lex->get_right_side()[0];
                 ret[j - 1][j].emplace_back(new_value);
-
                 auto tmp = std::make_shared<grammar::cfg::lexicon>();
                 tmp->is_terminal = true;
                 tmp->value = lex->get_right_side()[0];
@@ -176,9 +298,6 @@ private:
                                  new_value->probability = rule->get_probability();
                                  value->parentProbability = rule->get_parent_probability(value->value);
                                  value2->parentProbability = rule->get_parent_probability(value2->value);
-                                 auto t = assing_head(rule->get_left_side(), value, value2);
-                                 new_value->canonical = t->canonical;
-                                 new_value->category = t->category;
                                  ret[i][j].emplace_back(new_value);
                             }
                         }

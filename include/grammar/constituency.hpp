@@ -13,6 +13,7 @@ namespace grammar::cfg
 
 struct symbol : public std::enable_shared_from_this<symbol>
 {
+    std::wstring terminal;
     std::wstring value;
     double probability;
     std::wstring parent;
@@ -22,7 +23,6 @@ struct symbol : public std::enable_shared_from_this<symbol>
     bool is_terminal;
     std::shared_ptr<symbol> left = nullptr;
     std::shared_ptr<symbol> right = nullptr;
-    std::shared_ptr<symbol> terminal = nullptr;
 
 
     bool operator<(const symbol& r) const

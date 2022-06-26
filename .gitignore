@@ -7,4 +7,4 @@ delaf_linux.dic
 *.cg
 *.so
 data/*.xml
-*.xml
+*.gz

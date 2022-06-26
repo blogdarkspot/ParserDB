@@ -21,7 +21,7 @@ class PCFG
   public:
     PCFG() = default;
 
-    virtual void set_terminals(typename cfg::icfg::rule_ptr terminal)
+    virtual void set_terminals(typename cfg::icfg::rule_ptr terminal)//, std::wstring canonical)
     {
         auto tmp = std::static_pointer_cast<ProbabilisticRule>(terminal);
         _terminals[terminal->get_right_side()[0]].emplace_back(tmp);
@@ -29,13 +29,11 @@ class PCFG
 
     void set_canonical_terminal(std::wstring word, std::wstring category, std::wstring canonical)
     {
-        std::wcout << L"set canonical " << L" " << word << L" " << canonical << L" "  << category << std::endl; 
         _canonicals[std::make_pair(word, category)] = canonical;
     }
 
     std::wstring get_canonical_terminal(std::wstring word, std::wstring category)
     {
-        std::wcout << L"get canonical " << L" " << word << L" "  << category << std::endl; 
         return _canonicals[std::make_pair(word, category)];
     }
 
@@ -123,9 +121,19 @@ class PCFG
         return ret;
     }
 
-    std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>> get_rules()
+    const std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>>& get_rules()
     {
         return _rules;
+    }
+
+    const std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>>& get_terminal_rules()
+    {
+        return _rules_terminal;
+    }
+
+    const std::map<std::wstring, std::vector<std::shared_ptr<ProbabilisticRule>>>& get_terminals()
+    {
+        return _terminals;
     }
 
   private:

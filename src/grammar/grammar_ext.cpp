@@ -79,7 +79,7 @@ int build_tree(const std::shared_ptr<grammar::cfg::symbol> node, std::vector<Tre
     if(node != nullptr)
     {
         TreeNote value;
-        value.value = L"(" + node->value + L"," + node->parent + L"," + node->canonical + L")";
+        value.value =  node->value;
         if(node->is_terminal)
         {
             value.terminal = (std::static_pointer_cast<grammar::cfg::lexicon>(node))->lex;
@@ -141,8 +141,9 @@ class grammar
     {
         std::vector<std::wstring> _right;
         _right.emplace_back(right);
+        _right.emplace_back(canonical);
         auto terminal = std::make_shared<::grammar::cfg::ProbabilisticRule>(left, _right, true);
-        _pcfg->set_canonical_terminal(right, left, canonical);
+        //_pcfg->set_canonical_terminal(right, left, canonical);
         terminal->set_probability(1);
         _pcfg->set_terminals(terminal);
     }
