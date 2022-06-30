@@ -14,7 +14,7 @@ std::shared_ptr<grammar::cfg::ProbabilisticRule> add_terminal(std::wstring left,
 void printBT(const std::wstring& prefix, const std::shared_ptr<grammar::cfg::symbol> node, bool isLeft);
 void printBT(const std::shared_ptr<grammar::cfg::symbol> node);
 
-
+/*
 TEST(Grammar, InputRules)
 {
     auto _pcfg = std::make_shared<grammar::cfg::PCFG>();
@@ -254,7 +254,6 @@ TEST_F(PCFGTest, DPRules)
 
 TEST_F(PCFGTest, NPRules)
 {
-    /*
     auto _cky = std::make_shared<grammar::parser::cky>();
 
     _cky->set_cfg(_pcfg);
@@ -321,7 +320,7 @@ TEST_F(PCFGTest, NPRules)
         EXPECT_EQ(trees.size(), 1);
         printBT(trees[0]);
         _pcfg->clear_terminals();
-    }*/
+    }
 
 }
 
@@ -398,3 +397,4 @@ void printBT(const std::shared_ptr<grammar::cfg::symbol> node)
 {
     printBT(L"", node, false);    
 }
+*/
